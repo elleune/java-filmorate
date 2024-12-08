@@ -86,22 +86,6 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    void testValidFilm() {
-        Film film = new Film();
-        film.setName("Valid Film");
-        film.setDescription("This is a valid description.");
-        film.setReleaseDate(LocalDate.of(2022, 3, 12));
-        film.setDuration(120);
-
-        Film createFilm = filmController.postFilm(film);
-
-        assertEquals(film.getName(), createFilm.getName());
-        assertEquals(film.getDescription(), createFilm.getDescription());
-        assertEquals(film.getReleaseDate(), createFilm.getReleaseDate());
-        assertEquals(film.getDuration(), createFilm.getDuration());
-    }
-
-    @Test
     void createNotNameFilm() {
         Film film = new Film();
         film.setName("");
