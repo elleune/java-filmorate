@@ -2,9 +2,7 @@ package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import ru.yandex.practicum.filmorate.controller.FilmController;
-import ru.yandex.practicum.filmorate.controller.UserController;
+import ru.yandex.practicum.filmorate.Validator.Validator;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
@@ -16,16 +14,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 class FilmorateApplicationTests {
-
-    @Autowired
-    private UserController userController;
-
-    @Autowired
-    private FilmController filmController;
+    private Validator validator;
 
     @BeforeEach
-    void setUpUser() {
-        userController = new UserController();
+    void setUp() {
+        validator = new Validator();
     }
 
     @Test
@@ -36,7 +29,7 @@ class FilmorateApplicationTests {
         user.setName("Valid Name");
         user.setBirthday(LocalDate.of(2001, 11, 1));
 
-        User createUser = userController.postUser(user);
+        User createUser = validator.validationUser(user);
 
         assertEquals(user.getLogin(), createUser.getLogin());
         assertEquals(user.getEmail(), createUser.getEmail());
@@ -52,7 +45,7 @@ class FilmorateApplicationTests {
         user.setName("Valid Name");
         user.setBirthday(LocalDate.of(2001, 11, 1));
 
-        ValidationException exception = assertThrows(ValidationException.class, () -> userController.postUser(user));
+        ValidationException exception = assertThrows(ValidationException.class, () -> validator.validationUser(user));
         assertEquals("Логин не может быть пустым и содержать пробелы.", exception.getMessage());
     }
 
@@ -64,7 +57,7 @@ class FilmorateApplicationTests {
         user.setName("Valid Name");
         user.setBirthday(LocalDate.of(2001, 11, 1));
 
-        ValidationException exception = assertThrows(ValidationException.class, () -> userController.postUser(user));
+        ValidationException exception = assertThrows(ValidationException.class, () -> validator.validationUser(user));
         assertEquals("Электронная почта не может быть пустой и должна содержать знак `@`", exception.getMessage());
     }
 
@@ -76,14 +69,10 @@ class FilmorateApplicationTests {
         user.setName("Valid Name");
         user.setBirthday(null);
 
-        ValidationException exception = assertThrows(ValidationException.class, () -> userController.postUser(user));
+        ValidationException exception = assertThrows(ValidationException.class, () -> validator.validationUser(user));
         assertEquals("День рождения не может быть в будущем.", exception.getMessage());
     }
 
-    @BeforeEach
-    void setUpFilm() {
-        filmController = new FilmController();
-    }
 
     @Test
     void testValidFilm() {
@@ -93,7 +82,7 @@ class FilmorateApplicationTests {
         film.setReleaseDate(LocalDate.of(2022, 3, 12));
         film.setDuration(120);
 
-        Film createFilm = filmController.postFilm(film);
+        Film createFilm = validator.validationFilm(film);
 
         assertEquals(film.getName(), createFilm.getName());
         assertEquals(film.getDescription(), createFilm.getDescription());
@@ -109,7 +98,7 @@ class FilmorateApplicationTests {
         film.setReleaseDate(LocalDate.of(2022, 3, 12));
         film.setDuration(120);
 
-        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.postFilm(film));
+        ValidationException exception = assertThrows(ValidationException.class, () -> validator.validationFilm(film));
         assertEquals("Название не может быть пустым.", exception.getMessage());
     }
 
@@ -121,7 +110,7 @@ class FilmorateApplicationTests {
         film.setReleaseDate(LocalDate.of(2022, 3, 12));
         film.setDuration(120);
 
-        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.postFilm(film));
+        ValidationException exception = assertThrows(ValidationException.class, () -> validator.validationFilm(film));
         assertEquals("Максимальная длина описания - 200 символов.", exception.getMessage());
     }
 
@@ -134,7 +123,7 @@ class FilmorateApplicationTests {
         film.setReleaseDate(LocalDate.of(2022, 3, 12));
         film.setDuration(-1);
 
-        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.postFilm(film));
+        ValidationException exception = assertThrows(ValidationException.class, () -> validator.validationFilm(film));
         assertEquals("Продолжительность фильма должна быть положительным числом.", exception.getMessage());
     }
 
@@ -146,7 +135,7 @@ class FilmorateApplicationTests {
         film.setReleaseDate(LocalDate.of(1895, 11, 27));
         film.setDuration(120);
 
-        ValidationException exception = assertThrows(ValidationException.class, () -> filmController.postFilm(film));
+        ValidationException exception = assertThrows(ValidationException.class, () -> validator.validationFilm(film));
         assertEquals("Дата реализации - не раньше 28 декабря 1895 года.", exception.getMessage());
     }
 }
