@@ -28,7 +28,7 @@ public class UserService {
         this.userStorage = userStorage;
     }
 
-    public void validateUser(User user) {
+    public void validationUser(User user) {
         validator.validationUser(user);
     }
 
@@ -38,7 +38,7 @@ public class UserService {
     }
 
     public User createUser(User user) {
-        validateUser(user);
+        validationUser(user);
         userId++;
         user.setId(userId);
         return userStorage.createUser(user);
@@ -49,13 +49,13 @@ public class UserService {
         if (!actualUsers.containsKey(user.getId())) {
             throw new NotFoundException("Нет такого id");
         }
-        validateUser(user);
+        validationUser(user);
         return userStorage.updateUser(user);
     }
 
     public void deleteUser(long id) {
         User user = userStorage.getUserById(id);
-        validateUser(user);
+        validationUser(user);
         userStorage.deleteUser(user);
     }
 
