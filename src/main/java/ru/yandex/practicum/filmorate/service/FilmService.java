@@ -31,7 +31,7 @@ public class FilmService {
         this.userStorage = userStorage;
     }
 
-    public void validateFilm(Film film) {
+    public void validationFilm(Film film) {
         validator.validationFilm(film);
     }
 
@@ -41,7 +41,7 @@ public class FilmService {
     }
 
     public Film createFilm(Film film) {
-        validateFilm(film);
+        validationFilm(film);
         filmId++;
         film.setId(filmId);
         return filmStorage.createFilm(film);
@@ -49,13 +49,13 @@ public class FilmService {
 
     public Film updateFilm(Film filmUp) {
         Film film = filmStorage.getFilmById(filmUp.getId());
-        validateFilm(filmUp);
+        validationFilm(filmUp);
         return filmStorage.updateFilm(filmUp);
     }
 
     public void deleteFilm(long id) {
         Film film = filmStorage.getFilmById(id);
-        validateFilm(film);
+        validationFilm(film);
         filmStorage.deleteFilm(film);
     }
 
