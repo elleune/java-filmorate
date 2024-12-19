@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.Validator;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
@@ -8,8 +9,9 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.time.LocalDate;
 
 @Slf4j
+@Service
 public class Validator {
-    public User validationUser(User user) {
+    public void validationUser(User user) {
         if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
             log.error("Ошибка валидации логина");
             throw new ValidationException("Логин не может быть пустым и содержать пробелы.");
@@ -26,10 +28,9 @@ public class Validator {
             log.warn("Некорректная дата");
             throw new ValidationException("День рождения не может быть в будущем.");
         }
-        return user;
     }
 
-    public Film validationFilm(Film film) {
+    public void validationFilm(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
             log.error("Ошибка валидации фильма");
             throw new ValidationException("Название не может быть пустым.");
@@ -46,6 +47,5 @@ public class Validator {
             log.error("Ошибка валидации продолжительности фильма");
             throw new ValidationException("Продолжительность фильма должна быть положительным числом.");
         }
-        return film;
     }
 }
