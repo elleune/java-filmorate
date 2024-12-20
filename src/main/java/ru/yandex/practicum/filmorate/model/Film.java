@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,7 +10,6 @@ import lombok.ToString;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
-
 
 @Getter
 @Setter
@@ -27,9 +25,9 @@ public class Film {
     private String description;
     private long duration;
 
-    @JsonIgnore
+    @Builder.Default
     private Set<Long> userId = new HashSet<>();
-    @JsonIgnore
+    @Builder.Default
     private long rate = 0;
 
     public void addLike(long id) {
