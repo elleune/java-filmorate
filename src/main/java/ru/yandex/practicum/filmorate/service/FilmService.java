@@ -3,82 +3,67 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.Validator.Validator;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Slf4j
 @Service
 public class FilmService {
-    private final Validator validator;
     private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
-    private Long filmId = 0L;
+    private final UserService userService;
+    private static final int DEFAULT_POPULAR_FILMS_COUNT = 10;
 
     @Autowired
-    public FilmService(Validator validator, InMemoryFilmStorage filmStorage, InMemoryUserStorage userStorage) {
-        this.validator = validator;
+    public FilmService(FilmStorage filmStorage, UserService userService) {
         this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
+        this.userService = userService;
     }
 
-    public void validateFilm(Film film) {
-        validator.validationFilm(film);
+    public void likeFilm(long filmId, long userId) {
+        Film film = filmStorage.getFilmById(filmId);
+        User user = userService.getUserById(userId);
+        if (film.getIdUserLike().contains(userId)) {
+            throw new ValidationException("Пользователь " + user.getName() + " уже поставил лайк фильму "
+                    + film.getName() + ".");
+        }
+        film.getIdUserLike().add(userId);
+        log.info("Пользователь {} поставил лайк фильму {}.", user.getName(), film.getName());
     }
 
-    public List<Film> allFilm() {
-        log.debug("Текущее количество фильмов: {}", filmStorage.getFilms().size());
-        return new ArrayList<>(filmStorage.getFilms().values());
+    public void removeLikeFromFilm(long filmId, long userId) {
+        Film film = filmStorage.getFilmById(filmId);
+        User user = userService.getUserById(userId);
+        film.getIdUserLike().remove(userId);
+        log.info("Пользователь {} убрал лайк фильма {}.", user.getName(), film.getName());
+    }
+
+    public List<Film> getPopularFilms(Integer count) {
+        Optional<Integer> optionalCount = Optional.ofNullable(count);
+        log.info("Получение популярных фильмов.");
+        return filmStorage.findAllFilms().stream()
+                .sorted((film1, film2) -> Integer.compare(film2.getIdUserLike().size(), film1.getIdUserLike().size()))
+                .limit(optionalCount.orElse(DEFAULT_POPULAR_FILMS_COUNT))
+                .toList();
+    }
+
+    public Film getFilmById(long id) {
+        return filmStorage.getFilmById(id);
     }
 
     public Film createFilm(Film film) {
-        validateFilm(film);
-        filmId++;
-        film.setId(filmId);
         return filmStorage.createFilm(film);
     }
 
-    public Film updateFilm(Film filmUp) {
-        Film film = filmStorage.getFilmById(filmUp.getId());
-        validateFilm(filmUp);
-        return filmStorage.updateFilm(filmUp);
+    public Film updateFilm(Film newFilm) {
+        return filmStorage.updateFilm(newFilm);
     }
 
-    public void deleteFilm(long id) {
-        Film film = filmStorage.getFilmById(id);
-        validateFilm(film);
-        filmStorage.deleteFilm(film);
-    }
-
-    public void addLike(long id, long userId) {
-        Film film = filmStorage.getFilmById(id);
-        User user = userStorage.getUserById(userId);
-        film.addLike(userId);
-    }
-
-    public void deleteLike(long id, long userId) {
-        Film film = filmStorage.getFilmById(id);
-        User user = userStorage.getUserById(userId);
-        film.removeLike(userId);
-    }
-
-    public List<Film> getPopularFilms(int count) {
-        return filmStorage.getFilms().values().stream()
-                .sorted(Comparator.comparing(Film::getRate).reversed())
-                .limit(count)
-                .collect(Collectors.toList());
-    }
-
-    public Film getFilm(long id) {
-        return filmStorage.getFilmById(id);
+    public List<Film> findAllFilms() {
+        return filmStorage.findAllFilms();
     }
 }

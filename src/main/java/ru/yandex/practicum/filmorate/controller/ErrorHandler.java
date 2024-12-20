@@ -1,36 +1,40 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.yandex.practicum.filmorate.exception.ResourceException;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import ru.yandex.practicum.filmorate.exception.IncorrectCountException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 
-@Slf4j
 @RestControllerAdvice
 public class ErrorHandler {
 
-    @ExceptionHandler(ValidationException.class)
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleHappinessOverflow(ValidationException validationException) {
-        log.debug("Данные запроса содержат ошибку.");
-        return new ErrorResponse(validationException.getMessage());
+    public ErrorResponse incorrectCount(final IncorrectCountException exception) {
+        return new ErrorResponse("Некорректный count.", exception.getMessage());
     }
 
-    @ExceptionHandler(ResourceException.class)
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleHappinessOverflow(ResourceException resourceException) {
-        log.debug("Данные из запроса не найдены.");
-        return new ErrorResponse(resourceException.getMessage());
+    public ErrorResponse notFound(final NotFoundException exception) {
+        return new ErrorResponse("Ошибка null", exception.getMessage());
     }
 
-    @ExceptionHandler()
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleHappinessOverflow(Throwable throwable) {
-        log.debug("Непредвиденная ошибка.");
-        return new ErrorResponse("Произошла непредвиденная ошибка.");
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse validation(final ValidationException exception) {
+        return new ErrorResponse("Ошибка валидации.", exception.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse countValidation(final HandlerMethodValidationException exception) {
+        return new ErrorResponse(exception.getMessage(), "Параметр count имеет отрицательное значение.");
+    }
+
 }

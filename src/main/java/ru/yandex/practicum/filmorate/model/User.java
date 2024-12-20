@@ -1,29 +1,29 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-@Getter
-@Setter
-@ToString(callSuper = true)
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
-@Builder
+@NoArgsConstructor
 public class User {
     private Long id;
+    @Email(message = "Электронная почта должна содержать символ @.")
+    @NotNull(message = "Электронная почта не может быть пустой.")
+    @NotBlank(message = "Электронная почта не может быть пустой.")
     private String email;
+    @NotNull(message = "Поле логина не может быть пустым.")
+    @NotBlank(message = "Логин не может содержать пробелы.")
     private String login;
     private String name;
     private LocalDate birthday;
-    @JsonIgnore
-    private List<Long> friends = new ArrayList<>();
+    private Set<Long> friendsId = new HashSet<>();
 }
