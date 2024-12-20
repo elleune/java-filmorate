@@ -8,9 +8,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -58,11 +56,11 @@ public class FilmService {
         return filmStorage.findAllFilms();
     }
 
-    public List<Film> getTopFilms(int count) {
-        Collection<Film> allFilms = filmStorage.findAllFilms();
-        return allFilms.stream()
-                .sorted(((o1, o2) -> o2.getIdUserLike().size() - o1.getIdUserLike().size()))
+    public List<Film> getTopFilms(Integer count) {
+        log.info("Получение популярных фильмов.");
+        return filmStorage.findAllFilms().stream()
+                .sorted((film1, film2) -> Integer.compare(film2.getIdUserLike().size(), film1.getIdUserLike().size()))
                 .limit(count)
-                .collect(Collectors.toList());
+                .toList();
     }
 }
