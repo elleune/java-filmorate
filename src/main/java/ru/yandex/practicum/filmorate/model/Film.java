@@ -24,7 +24,7 @@ public class Film {
     @Size(max = 200, message = "Максимальная длина описания - 200 символов.")
     private String description;
     private LocalDate releaseDate;
-    private Set<Long> idUserLike = new HashSet<>();
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT)
     private Duration duration;
+    private Set<Long> idUserLike = new HashSet<>();
 }
