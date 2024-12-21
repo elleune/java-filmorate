@@ -8,9 +8,9 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
-
 import java.util.List;
 import java.util.Optional;
+
 @Slf4j
 @Service
 public class FilmService {
@@ -62,7 +62,7 @@ public class FilmService {
         Optional<Integer> optionalCount = Optional.ofNullable(count);
         log.info("Получение популярных фильмов.");
         return filmStorage.findAllFilms().stream()
-                .sorted((film1,film2) -> Integer.compare(film2.getIdUserLike().size(), film1.getIdUserLike().size()))
+                .sorted((film1, film2) -> Integer.compare(film2.getIdUserLike().size(), film1.getIdUserLike().size()))
                 .limit(optionalCount.orElse(DEFAULT_POPULAR_FILMS_COUNT))
                 .toList();
     }
