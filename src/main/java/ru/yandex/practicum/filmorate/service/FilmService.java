@@ -8,13 +8,15 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
-import java.util.List;
 
+import java.util.List;
+import java.util.Optional;
 @Slf4j
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserService userService;
+    private static final int DEFAULT_POPULAR_FILMS_COUNT = 10;
 
     @Autowired
     public FilmService(FilmStorage filmStorage, UserService userService) {
@@ -56,11 +58,12 @@ public class FilmService {
         return filmStorage.findAllFilms();
     }
 
-    public List<Film> getTopFilms(Integer count) {
+    public List<Film> getPopularFilms(Integer count) {
+        Optional<Integer> optionalCount = Optional.ofNullable(count);
         log.info("Получение популярных фильмов.");
         return filmStorage.findAllFilms().stream()
-                .sorted((film1, film2) -> Integer.compare(film2.getIdUserLike().size(), film1.getIdUserLike().size()))
-                .limit(count)
+                .sorted((film1,film2) -> Integer.compare(film2.getIdUserLike().size(), film1.getIdUserLike().size()))
+                .limit(optionalCount.orElse(DEFAULT_POPULAR_FILMS_COUNT))
                 .toList();
     }
 }
