@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.validator;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
@@ -10,7 +9,6 @@ import java.time.Duration;
 import java.time.LocalDate;
 
 @Slf4j
-@Service
 public class Validator {
     public static void validationUser(User user) {
         if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
@@ -41,7 +39,7 @@ public class Validator {
             log.error("Ошибка валидации описания");
             throw new ValidationException("Максимальная длина описания - 200 символов.");
         }
-        if (film.getReleaseDate() == null || film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
+        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             log.error("Ошибка валидации даты создания");
             throw new ValidationException("Дата реализации - не раньше 28 декабря 1895 года.");
         }
