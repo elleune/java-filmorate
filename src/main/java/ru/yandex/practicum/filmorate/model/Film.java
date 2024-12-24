@@ -1,30 +1,40 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
+@ToString(callSuper = true)
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Film {
     private Long id;
-    @NotNull(message = "Название фильма не может быть пустым.")
-    @NotBlank(message = "Название фильма не может быть пустым.")
     private String name;
-    @Size(max = 200, message = "Максимальная длина описания - 200 символов.")
-    private String description;
     private LocalDate releaseDate;
-    @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT)
-    private Duration duration;
-    private Set<Long> idUserLike = new HashSet<>();
+    private String description;
+    private long duration;
+    @Builder.Default
+    private Set<Long> userId = new HashSet<>();
+    @Builder.Default
+    private long rate = 0;
+
+    public void addLike(long id) {
+        userId.add(id);
+        rate = userId.size();
+    }
+
+    public void removeLike(long id) {
+        userId.remove(id);
+        rate = userId.size();
+    }
 }

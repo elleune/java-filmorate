@@ -1,8 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,49 +16,54 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/films")
-@RequiredArgsConstructor
 public class FilmController {
     private final FilmService filmService;
 
-
-    @PutMapping("/{id}/like/{userId}")
-    public void likeFilm(@PathVariable("id") long filmId, @PathVariable long userId) {
-        filmService.likeFilm(filmId, userId);
-    }
-
-
-    @DeleteMapping("/{id}/like/{userId}")
-    public void removeLikeFromFilm(@PathVariable("id") long filmId, @PathVariable long userId) {
-        filmService.removeLikeFromFilm(filmId, userId);
-    }
-
-
-    @GetMapping("/popular")
-    public List<Film> getPopularFilms(@RequestParam(required = false) @Positive Integer count) {
-        return filmService.getPopularFilms(count);
-    }
-
-
-    @PostMapping
-    public Film create(@Valid @RequestBody Film film) {
-        return filmService.createFilm(film);
-    }
-
-
-    @PutMapping
-    public Film update(@Valid @RequestBody Film newFilm) {
-        return filmService.updateFilm(newFilm);
+    @Autowired
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
     }
 
     @GetMapping
-    public List<Film> findAllFilms() {
-        return filmService.findAllFilms();
+    public List<Film> findAll() {
+        return filmService.findAll();
+    }
+
+    @PostMapping
+    public Film create(@RequestBody Film film) {
+        return filmService.create(film);
+    }
+
+    @PutMapping
+    public Film put(@RequestBody Film film) {
+        return filmService.update(film);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable("id") Integer id) {
+        filmService.delete(id);
     }
 
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable long id) {
-        return filmService.getFilmById(id);
+    public Film getFilmById(@PathVariable("id") Integer id) {
+        return filmService.getFilm(id);
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable("id") int id, @PathVariable("userId") int userId) {
+        filmService.addLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void deleteLike(@PathVariable("id") int id, @PathVariable("userId") int userId) {
+        filmService.deleteLike(id, userId);
+    }
+
+    @GetMapping("/popular")
+    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
+        return filmService.getPopularFilms(count);
     }
 }

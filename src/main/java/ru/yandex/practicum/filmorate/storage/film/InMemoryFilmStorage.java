@@ -2,70 +2,54 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.validator.Validator;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
-    private final Map<Long, Film> films = new HashMap<>();
+    Map<Long, Film> films = new HashMap<>();
 
-    public Film createFilm(Film film) {
-        Validator.validationFilm(film);
-        film.setId(getNextId());
+    @Override
+    public Map<Long, Film> getFilms() {
+        return films;
+    }
+
+    @Override
+    public Film create(Film film) {
         films.put(film.getId(), film);
-        log.info("Создан новый фильм - {} , ID - {}.", film.getName(), film.getId());
+        log.debug("Создан новый фильм с названием: {}", film.getName());
         return film;
     }
 
-    public Film updateFilm(Film newFilm) {
-        if (newFilm.getId() == null) {
-            log.warn("При обновлении данных не указали ID.");
-            throw new ValidationException("ID должен быть указан.");
+    @Override
+    public Film update(Film film) {
+        if (!films.containsKey(film.getId())) {
+            throw new RuntimeException("Нет такого id");
         }
-        if (!films.containsKey(newFilm.getId())) {
-            log.warn("В базе нет фильма с ID - {}.", newFilm.getId());
-            throw new NotFoundException("Фильм с ID = " + newFilm.getId() + " не найден");
-        }
-        Validator.validationFilm(newFilm);
-        films.put(newFilm.getId(), newFilm);
-        log.info("Информация о фильме - {} , ID - {} , обновлена.", newFilm.getName(), newFilm.getId());
-        return newFilm;
+        films.put(film.getId(), film);
+        log.debug("Обновлены данные пользователя с именем: {}", film.getName());
+        return film;
     }
 
-
-    public List<Film> findAllFilms() {
-        log.info("Получение всех фильмов.");
-        return new ArrayList<>(films.values());
+    @Override
+    public void delete(Film film) {
+        if (!films.containsKey(film.getId())) {
+            throw new RuntimeException("Нет такого id");
+        }
+        films.remove(film.getId());
+        log.debug("Пользователь с именем: {} удален", film.getName());
     }
 
+    @Override
     public Film getFilmById(long id) {
-        if (!films.containsKey(id)) {
-            log.warn("При получении фильма указали неверный ID.");
-            throw new NotFoundException("Фильма с ID = " + id + " не существует.");
+        Map<Long, Film> actualFilms = getFilms();
+        if (!actualFilms.containsKey(id)) {
+            throw new DataNotFoundException("Нет такого id - фильма");
         }
-        log.info("Получение фильма по ID.");
-        return films.get(id);
+        return actualFilms.get(id);
     }
-
-    public void deleteAllFilms() {
-        films.clear();
-    }
-
-    private long getNextId() {
-        long currentMaxId = films.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
-    }
-
 }

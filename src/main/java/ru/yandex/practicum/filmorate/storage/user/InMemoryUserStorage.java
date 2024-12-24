@@ -2,14 +2,10 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.validator.Validator;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -18,54 +14,43 @@ public class InMemoryUserStorage implements UserStorage {
 
     private final Map<Long, User> users = new HashMap<>();
 
+    @Override
+    public Map<Long, User> getUsers() {
+        return users;
+    }
+
+    @Override
     public User create(User user) {
-        Validator.validationUser(user);
-        user.setId(getNextId());
         users.put(user.getId(), user);
-        log.info("Создан новый пользователь - {} , ID - {}.", user.getLogin(), user.getId());
+        log.debug("Создан новый пользователь с именем: {}", user.getName());
         return user;
     }
 
-    public User update(User newUser) {
-        if (newUser.getId() == null) {
-            log.warn("При обновлении данных не указали ID.");
-            throw new ValidationException("ID должен быть указан.");
+    @Override
+    public User update(User user) {
+        if (!users.containsKey(user.getId())) {
+            throw new RuntimeException("Нет такого id");
         }
-        if (users.get(newUser.getId()) == null) {
-            log.warn("В базе нет пользователя с ID - {}.", newUser.getId());
-            throw new NotFoundException("Пользователь с ID - " + newUser.getId() + " не найден");
-        }
-        Validator.validationUser(newUser);
-        users.put(newUser.getId(), newUser);
-        log.info("Информация о пользователе - {} , ID - {} , обновлена.", newUser.getLogin(), newUser.getId());
-        return newUser;
+        users.put(user.getId(), user);
+        log.debug("Обновлены данные пользователя с именем: {}", user.getName());
+        return user;
     }
 
-
-    public List<User> findAll() {
-        log.info("Получение всех пользователей.");
-        return new ArrayList<>(users.values());
+    @Override
+    public void delete(User user) {
+        if (!users.containsKey(user.getId())) {
+            throw new RuntimeException("Нет такого id");
+        }
+        users.remove(user.getId());
+        log.debug("Пользователь с именем: {} удален", user.getName());
     }
 
+    @Override
     public User getUserById(long id) {
-        if (!users.containsKey(id)) {
-            log.warn("При пользователя указали неверный ID.");
-            throw new NotFoundException("Пользователя с ID = " + id + " не существует.");
+        Map<Long, User> actualUsers = getUsers();
+        if (!actualUsers.containsKey(id)) {
+            throw new DataNotFoundException("Нет такого id - пользователя");
         }
-        log.info("Получение пользователя по ID.");
-        return users.get(id);
-    }
-
-    public void deleteAllUsers() {
-        users.clear();
-    }
-
-    private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+        return actualUsers.get(id);
     }
 }
