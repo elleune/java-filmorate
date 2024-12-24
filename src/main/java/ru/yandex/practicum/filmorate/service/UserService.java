@@ -20,7 +20,7 @@ public class UserService {
 
     private final Validator validator;
     private final UserStorage userStorage;
-    private long userId = 0;
+    private long userId;
 
     @Autowired
     public UserService(Validator validator, InMemoryUserStorage userStorage) {
