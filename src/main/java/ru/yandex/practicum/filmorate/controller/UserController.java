@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.controller;
 
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -52,7 +51,7 @@ public class UserController {
         log.info("Получен запрос DELETE на удаление пользователя с id = {}", id);
         userService.delete(id);
     }
-    
+
     @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable("id") long id, @PathVariable("friendId") long friendId) {
         log.info("Получен запрос PUT на добавление пользователя c id = {} в друзья к пользователю с id = {}",
