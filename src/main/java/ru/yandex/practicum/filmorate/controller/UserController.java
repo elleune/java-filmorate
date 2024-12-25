@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
 import java.util.List;
@@ -22,10 +23,12 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final UserStorage userStorage;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserStorage userStorage) {
         this.userService = userService;
+        this.userStorage = userStorage;
     }
 
     @GetMapping
@@ -53,7 +56,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable("id") long id, @PathVariable("friendId") long friendId) {
+    public void addFriend(@PathVariable long id, @PathVariable("friendId") long friendId) {
         log.info("Получен запрос PUT на добавление пользователя c id = {} в друзья к пользователю с id = {}",
                 id, friendId);
         userService.addFriend(id, friendId);
