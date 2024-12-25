@@ -107,4 +107,4 @@ public class UserService {
         log.debug("Получен список друзей пользователя {}", user.getName());
         return user.getFriendsId().stream().map(actualUsers::get).collect(Collectors.toList());
     }
-}   
+}
