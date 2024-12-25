@@ -18,18 +18,16 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
 
-    private final Validator validator;
     private final UserStorage userStorage;
     private long userId;
 
     @Autowired
-    public UserService(Validator validator, InMemoryUserStorage userStorage) {
-        this.validator = validator;
+    public UserService(InMemoryUserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
-    public void validateUser(User user) {
-        validator.validationUser(user);
+    public void validationUser(User user) {
+        Validator.validationUser(user);
     }
 
     public List<User> findAll() {
@@ -40,7 +38,7 @@ public class UserService {
 
     public User create(User user) {
         log.debug("Получен запрос POST /users.");
-        validateUser(user);
+        validationUser(user);
         userId++;
         user.setId(userId);
         return userStorage.create(user);
@@ -51,7 +49,7 @@ public class UserService {
         if (!actualUsers.containsKey(user.getId())) {
             throw new DataNotFoundException("Нет такого id");
         }
-        validateUser(user);
+        validationUser(user);
         log.debug("Получен запрос PUT /users.");
         return userStorage.update(user);
     }
@@ -59,7 +57,7 @@ public class UserService {
     public void delete(long id) {
         log.debug("Получен запрос DELETE /users/{id}.");
         User user = userStorage.getUserById(id);
-        validateUser(user);
+        validationUser(user);
         userStorage.delete(user);
     }
 
@@ -77,9 +75,7 @@ public class UserService {
         log.debug("Получен запрос DELETE /users/{id}/friends/{friendId}.");
         User firstFriend = userStorage.getUserById(id);
         User secondFriend = userStorage.getUserById(friendId);
-        if (firstFriend.getFriendsId().contains(friendId)) {
-            firstFriend.getFriendsId().remove(friendId);
-        }
+        firstFriend.getFriendsId().remove(friendId);
         if (secondFriend.getFriendsId().contains(friendId)) {
             secondFriend.getFriendsId().remove(id);
             log.debug("Пользователи {} и {} теперь не друзья", firstFriend.getName(),
@@ -99,7 +95,7 @@ public class UserService {
             return new ArrayList<>();
         }
         List<Long> commonIdList = firstFriendsList.stream().filter(secondFriendsList::contains)
-                .collect(Collectors.toList());
+                .toList();
         return commonIdList.stream().map(actualUsers::get).collect(Collectors.toList());
     }
 
