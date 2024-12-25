@@ -70,7 +70,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getFriendsList(@PathVariable("id") Long id) {
+    public List<User> getFriends(@PathVariable("id") Long id) {
         log.info("Поступил запрос GET на получение друзей пользователя {}", id);
         return userService.getFriendsList(id);
     }
