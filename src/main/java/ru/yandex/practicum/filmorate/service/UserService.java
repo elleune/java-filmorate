@@ -72,14 +72,11 @@ public class UserService {
 
     public void deleteFriend(long id, long friendId) {
         log.debug("Получен запрос DELETE /users/{id}/friends/{friendId}.");
-        User firstFriend = userStorage.getUserById(id);
-        User secondFriend = userStorage.getUserById(friendId);
-        firstFriend.getFriendsId().remove(friendId);
-        if (secondFriend.getFriendsId().contains(friendId)) {
-            secondFriend.getFriendsId().remove(id);
-            log.debug("Пользователи {} и {} теперь не друзья", firstFriend.getName(),
-                    secondFriend.getName());
-        }
+        User user = userStorage.getUserById(id);
+        User userFriend = userStorage.getUserById(friendId);
+        user.getFriendsId().remove(friendId);
+        userFriend.getFriendsId().remove(id);
+        log.info("Пользователь {} удалил из друзей {}.", user.getName(), userFriend.getName());
     }
 
     public List<User> getCommonFriend(long id, long otherId) {
@@ -110,4 +107,4 @@ public class UserService {
         log.debug("Получен список друзей пользователя {}", user.getName());
         return user.getFriendsId().stream().map(actualUsers::get).collect(Collectors.toList());
     }
-}
+}   
