@@ -5,8 +5,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.Map;
 
 public interface UserStorage {
-
-
     Map<Long, User> getUsers();
 
     User create(User user);
