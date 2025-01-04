@@ -35,19 +35,19 @@ public class Validator {
     public static void validationFilm(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
             log.error("Ошибка валидации фильма");
-            throw new ValidationException(HttpStatus.BAD_REQUEST, "Название не может быть пустым.");
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "Название не может быть пустым");
         }
         if (film.getDescription() == null || film.getDescription().isBlank() || film.getDescription().length() > 200) {
-            log.error("Ошибка валидации описания");
-            throw new ValidationException(HttpStatus.BAD_REQUEST, "Максимальная длина описания - 200 символов.");
+            log.error("Ошибка валидации описания фильма");
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "Максимальная длина описания - 200 символов");
         }
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             log.error("Ошибка валидации даты создания");
-            throw new ValidationException(HttpStatus.BAD_REQUEST, "Дата реализации - не раньше 28 декабря 1895 года.");
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "Дата реализации - не раньше 28 декабря 1895 года");
         }
         if (film.getDuration() <= 0)  {
             log.error("Ошибка валидации продолжительности фильма");
-            throw new ValidationException(HttpStatus.BAD_REQUEST, "Продолжительность фильма должна быть положительным числом.");
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "Продолжительность фильма должна быть положительным числом");
         }
     }
 }
