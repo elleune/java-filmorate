@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.validator.Validator;
 
@@ -24,7 +26,7 @@ public class FilmService {
     private Long filmId = 0L;
 
     @Autowired
-    public FilmService(Validator validator, FilmStorage filmStorage, UserStorage userStorage) {
+    public FilmService(Validator validator, InMemoryFilmStorage filmStorage, InMemoryUserStorage userStorage) {
         this.validator = validator;
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
