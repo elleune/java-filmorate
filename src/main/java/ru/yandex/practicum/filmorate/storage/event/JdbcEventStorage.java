@@ -18,12 +18,12 @@ public class JdbcEventStorage extends BaseRepository<Event> implements EventStor
     }
 
 
-    private static final String CREATE_EVENT_QUERY = """
+    private final String CREATE_EVENT_QUERY = """
             INSERT INTO events (TIMESTAMP,USER_ID,EVENT_TYPE,OPERATION,ENTITY_ID)
             VALUES (?, ?, ?, ?, ?)
             """;
 
-    private static final String GET_EVENT_BY_USER_ID_QUERY = """
+    private final String GET_EVENT_BY_USER_ID_QUERY = """
             SELECT *
             FROM events
             WHERE user_id = ?
