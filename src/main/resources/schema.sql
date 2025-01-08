@@ -23,11 +23,10 @@ create table FRIENDSHIP
     FRIEND1_ID    INTEGER not null,
     FRIEND2_ID    INTEGER not null,
     constraint FRIENDSHIP_CLIENT2_FK
-        foreign key (FRIEND2_ID) references CLIENTS
-            on delete cascade,
+        foreign key (FRIEND2_ID) references CLIENTS,
     constraint FRIENDSHIP_CLIENTS_FK
         foreign key (FRIEND1_ID) references CLIENTS
-            on delete cascade
+
 );
 
 create table MPA
