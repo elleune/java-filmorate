@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.service.mpa.InMemoryMpaRatingService;
+import ru.yandex.practicum.filmorate.service.mpa.MpaRatingService;
 
 import java.util.List;
 
@@ -19,7 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MpaRatingController {
 
-    private final InMemoryMpaRatingService mpaRatingService;
+    private final MpaRatingService mpaRatingService;
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)

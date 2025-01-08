@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.event.InMemoryEventService;
+import ru.yandex.practicum.filmorate.service.event.EventServiceImpl;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
 import java.util.List;
@@ -27,7 +27,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userServiceImpl;
-    private final InMemoryEventService eventServiceImpl;
+    private final EventServiceImpl eventServiceImpl;
 
     @GetMapping("{id}/feed")
     @ResponseStatus(HttpStatus.OK)

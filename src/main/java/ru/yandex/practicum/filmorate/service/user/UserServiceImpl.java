@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.exception.NotUsersFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.Operation;
-import ru.yandex.practicum.filmorate.service.event.InMemoryEventService;
+import ru.yandex.practicum.filmorate.service.event.EventServiceImpl;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.validator.Validator;
 
@@ -16,15 +16,15 @@ import java.util.List;
 
 @Slf4j
 @Service
-public class InMemoryUserService implements UserService {
+public class UserServiceImpl implements UserService {
     private final UserStorage jdbcUserRepository;
-    private final InMemoryEventService eventServiceImpl;
+    private final EventServiceImpl eventServiceImpl;
     private static final String CONFIRMED = "CONFIRMED";
     private static final String UNCONFIRMED = "UNCONFIRMED";
 
 
     @Autowired
-    public InMemoryUserService(UserStorage jdbcUserRepository, InMemoryEventService eventServiceImpl) {
+    public UserServiceImpl(UserStorage jdbcUserRepository, EventServiceImpl eventServiceImpl) {
         this.jdbcUserRepository = jdbcUserRepository;
         this.eventServiceImpl = eventServiceImpl;
     }
@@ -41,8 +41,7 @@ public class InMemoryUserService implements UserService {
         User oldUser = jdbcUserRepository.getUserById(user.getId());
         log.info("Старый пользователь:\n{}", oldUser);
         Validator.validateUser(user);
-        User userResult = jdbcUserRepository.updateUser(user);
-        return userResult;
+        return jdbcUserRepository.updateUser(user);
     }
 
 

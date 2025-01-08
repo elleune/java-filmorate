@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.Operation;
-import ru.yandex.practicum.filmorate.service.event.InMemoryEventService;
-import ru.yandex.practicum.filmorate.service.user.InMemoryUserService;
+import ru.yandex.practicum.filmorate.service.event.EventServiceImpl;
+import ru.yandex.practicum.filmorate.service.user.UserServiceImpl;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.validator.Validator;
 
@@ -15,13 +15,13 @@ import java.util.List;
 
 @Slf4j
 @Service
-public class InMemoryFilmService implements FilmService {
+public class FilmServiceImpl implements FilmService {
     private final FilmStorage jdbcFilmRepository;
-    private final InMemoryUserService userServiceImpl;
-    private final InMemoryEventService eventServiceImpl;
+    private final UserServiceImpl userServiceImpl;
+    private final EventServiceImpl eventServiceImpl;
 
     @Autowired
-    public InMemoryFilmService(FilmStorage jdbcFilmRepository, InMemoryUserService userServiceImpl, InMemoryEventService eventServiceImpl) {
+    public FilmServiceImpl(FilmStorage jdbcFilmRepository, UserServiceImpl userServiceImpl, EventServiceImpl eventServiceImpl) {
         this.jdbcFilmRepository = jdbcFilmRepository;
         this.userServiceImpl = userServiceImpl;
         this.eventServiceImpl = eventServiceImpl;

@@ -10,8 +10,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.genre.InMemoryGenreService;
-import ru.yandex.practicum.filmorate.service.mpa.InMemoryMpaRatingService;
+import ru.yandex.practicum.filmorate.service.genre.GenreServiceImpl;
+import ru.yandex.practicum.filmorate.service.mpa.MpaRatingService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ public class Validator implements ApplicationContextAware {
             throw new ValidationException("Продолжительность фильма должна быть положительным числом.");
         }
 
-        InMemoryGenreService genreServiceImpl = context.getBean(InMemoryGenreService.class);
+        GenreServiceImpl genreServiceImpl = context.getBean(GenreServiceImpl.class);
         List<Genre> genres = genreServiceImpl.getAllGenres();
         List<Long> genresId = new ArrayList<>();
         for (Genre genre : genres) {
@@ -54,7 +54,7 @@ public class Validator implements ApplicationContextAware {
             }
         }
 
-        InMemoryMpaRatingService mpaRatingService = context.getBean(InMemoryMpaRatingService.class);
+        MpaRatingService mpaRatingService = context.getBean(MpaRatingService.class);
 
         List<Mpa> maps = mpaRatingService.getAll();
         List<Integer> pasId = new ArrayList<>();

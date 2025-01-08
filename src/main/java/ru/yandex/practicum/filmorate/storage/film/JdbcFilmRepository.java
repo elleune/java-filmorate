@@ -7,8 +7,8 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.service.genre.InMemoryGenreService;
-import ru.yandex.practicum.filmorate.service.mpa.InMemoryMpaRatingService;
+import ru.yandex.practicum.filmorate.service.genre.GenreServiceImpl;
+import ru.yandex.practicum.filmorate.service.mpa.MpaRatingService;
 import ru.yandex.practicum.filmorate.storage.BaseRepository;
 
 import java.util.HashSet;
@@ -17,11 +17,11 @@ import java.util.List;
 @Repository
 @Slf4j
 public class JdbcFilmRepository extends BaseRepository<Film> implements FilmStorage {
-    private final InMemoryMpaRatingService mpaRatingService;
-    private final InMemoryGenreService genreServiceImpl;
+    private final MpaRatingService mpaRatingService;
+    private final GenreServiceImpl genreServiceImpl;
 
-    public JdbcFilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, InMemoryMpaRatingService mpaRatingService,
-                              InMemoryGenreService genreServiceImpl) {
+    public JdbcFilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper, MpaRatingService mpaRatingService,
+                              GenreServiceImpl genreServiceImpl) {
         super(jdbc, mapper);
         this.mpaRatingService = mpaRatingService;
         this.genreServiceImpl = genreServiceImpl;

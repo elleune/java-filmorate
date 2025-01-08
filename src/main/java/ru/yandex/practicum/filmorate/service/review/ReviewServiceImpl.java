@@ -5,22 +5,22 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.Operation;
-import ru.yandex.practicum.filmorate.service.event.InMemoryEventService;
-import ru.yandex.practicum.filmorate.service.film.InMemoryFilmService;
-import ru.yandex.practicum.filmorate.service.user.InMemoryUserService;
+import ru.yandex.practicum.filmorate.service.event.EventServiceImpl;
+import ru.yandex.practicum.filmorate.service.film.FilmServiceImpl;
+import ru.yandex.practicum.filmorate.service.user.UserServiceImpl;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 
 import java.util.List;
 
 @Service
 @Slf4j
-public class InMemoryReviewService implements ReviewService {
+public class ReviewServiceImpl implements ReviewService {
     private final ReviewStorage jdbcReviewStorage;
-    private final InMemoryUserService userServiceImpl;
-    private final InMemoryFilmService filmServiceImpl;
-    private final InMemoryEventService eventServiceImpl;
+    private final UserServiceImpl userServiceImpl;
+    private final FilmServiceImpl filmServiceImpl;
+    private final EventServiceImpl eventServiceImpl;
 
-    public InMemoryReviewService(ReviewStorage jdbcReviewStorage, InMemoryUserService userServiceImpl, InMemoryFilmService filmServiceImpl, InMemoryEventService eventServiceImpl) {
+    public ReviewServiceImpl(ReviewStorage jdbcReviewStorage, UserServiceImpl userServiceImpl, FilmServiceImpl filmServiceImpl, EventServiceImpl eventServiceImpl) {
         this.jdbcReviewStorage = jdbcReviewStorage;
         this.userServiceImpl = userServiceImpl;
         this.filmServiceImpl = filmServiceImpl;

@@ -13,12 +13,12 @@ import java.util.List;
 
 @Service
 @Slf4j
-public class InMemoryEventService implements EventService {
+public class EventServiceImpl implements EventService {
 
     private final EventStorage jdbcEventStorage;
 
     @Autowired
-    public InMemoryEventService(EventStorage jdbcEventStorage) {
+    public EventServiceImpl(EventStorage jdbcEventStorage) {
         this.jdbcEventStorage = jdbcEventStorage;
     }
 
