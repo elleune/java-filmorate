@@ -9,84 +9,91 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.validator.Validator;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class UserService {
 
-    private final UserStorage userStorage;
-    private long userId = 0L;
+    private final Validator validator;
+    private final UserStorage userDbStorage;
+    private long userId = 0;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
-
-    public void validationUser(User user) {
-        Validator.validationUser(user);
-    }
-
-    public List<User> findAll() {
-        return new ArrayList<>(userStorage.getUsers().values());
+    public UserService(Validator validator, UserStorage userDbStorage) {
+        this.validator = validator;
+        this.userDbStorage = userDbStorage;
     }
 
     public User create(User user) {
         validationUser(user);
         userId++;
         user.setId(userId);
-        return userStorage.create(user);
+        return userDbStorage.create(user);
+    }
+
+    public void validationUser(User user) {
+        Validator.validationUser(user);
     }
 
     public User update(User user) {
-        Map<Long, User> actualUsers = userStorage.getUsers();
-        if (!actualUsers.containsKey(user.getId())) {
+        validationUser(user);
+        if (userDbStorage.getUserById(user.getId()).isEmpty()) {
             throw new DataNotFoundException("Нет такого id");
         }
-        validationUser(user);
-        return userStorage.update(user);
+        return userDbStorage.update(user);
     }
 
     public void delete(long id) {
-        User user = userStorage.getUserById(id);
-        validationUser(user);
-        userStorage.delete(user);
+        userDbStorage.delete(id);
+    }
+
+
+    public Collection<User> findAll() {
+        return userDbStorage.getAllUsers();
     }
 
     public void addFriend(long id, long friendId) {
-        User firstFriend = userStorage.getUserById(id);
-        User secondFriend = userStorage.getUserById(friendId);
-        firstFriend.getFriendsId().add(friendId);
-        secondFriend.getFriendsId().add(id);
-        secondFriend.getName();
-    }
-
-    public void deleteFriend(long id, long friendId) {
-        User user = userStorage.getUserById(id);
-        User userFriend = userStorage.getUserById(friendId);
-        user.getFriendsId().remove(friendId);
-        userFriend.getFriendsId().remove(id);
-    }
-
-    public List<User> getCommonFriend(long id, long otherId) {
-        Map<Long, User> actualUsers = userStorage.getUsers();
-        User firstFriend = userStorage.getUserById(id);
-        User secondFriend = userStorage.getUserById(otherId);
-        List<Long> firstFriendsList = firstFriend.getFriendsId();
-        List<Long> secondFriendsList = secondFriend.getFriendsId();
-        if (firstFriendsList.isEmpty() || secondFriendsList.isEmpty()) {
-            return new ArrayList<>();
+        if (userDbStorage.getUserById(id).isEmpty() || userDbStorage.getUserById(friendId).isEmpty()) {
+            throw new DataNotFoundException("Нет такого id");
         }
-        List<Long> commonIdList = firstFriendsList.stream().filter(secondFriendsList::contains)
-                .toList();
-        return commonIdList.stream().map(actualUsers::get).collect(Collectors.toList());
+        userDbStorage.addFriend(id, friendId);
+    }
+
+    public Optional<User> getUser(Long id) {
+        if (userDbStorage.getUserById(id).isEmpty()) {
+            throw new DataNotFoundException("Нет такого id");
+        }
+        return userDbStorage.getUserById(id);
     }
 
     public List<User> getFriendsList(long id) {
-        User user = userStorage.getUserById(id);
-        Map<Long, User> actualUsers = userStorage.getUsers();
-        return user.getFriendsId().stream().map(actualUsers::get).collect(Collectors.toList());
+        if (userDbStorage.getUserById(id).isEmpty()) {
+            throw new DataNotFoundException("Нет такого id");
+        }
+        return userDbStorage.getFriendsList(id);
+    }
+
+    public void deleteFriend(long id, long friendId) {
+        if (userDbStorage.getUserById(id).isEmpty() || userDbStorage.getUserById(friendId).isEmpty()) {
+            throw new DataNotFoundException("Нет такого id");
+        }
+        userDbStorage.deleteFriend(id, friendId);
+    }
+
+    public List<User> getCommonFriend(Long id, Long otherId) {
+        if (userDbStorage.getUserById(id).isEmpty() || userDbStorage.getUserById(otherId).isEmpty()) {
+            throw new DataNotFoundException("Нет такого id");
+        }
+        List<User> firstFriendsList = userDbStorage.getFriendsList(id);
+        List<User> secondFriendsList = userDbStorage.getFriendsList(otherId);
+        if (firstFriendsList.isEmpty() || secondFriendsList.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return firstFriendsList.stream().filter(secondFriendsList::contains)
+                .collect(Collectors.toList());
     }
 }

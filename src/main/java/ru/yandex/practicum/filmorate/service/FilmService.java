@@ -9,78 +9,72 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.validator.Validator;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Slf4j
 @Service
 public class FilmService {
     private final Validator validator;
-    private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
+    private final FilmStorage filmDbStorage;
+    private final UserStorage userDbStorage;
     private Long filmId = 0L;
 
     @Autowired
-    public FilmService(Validator validator, FilmStorage filmStorage, UserStorage userStorage) {
+    public FilmService(Validator validator, FilmStorage filmDbStorage, UserStorage userDbStorage) {
         this.validator = validator;
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
+        this.filmDbStorage = filmDbStorage;
+        this.userDbStorage = userDbStorage;
     }
 
     public void validationFilm(Film film) {
         validator.validationFilm(film);
     }
 
-    public List<Film> findAll() {
-        return new ArrayList<>(filmStorage.getFilms().values());
-    }
-
     public Film create(Film film) {
         validationFilm(film);
         filmId++;
         film.setId(filmId);
-        return filmStorage.create(film);
+        return filmDbStorage.create(film);
     }
 
-    public Film update(Film film) {
-        Map<Long, Film> actualUsers = filmStorage.getFilms();
-        if (!actualUsers.containsKey(film.getId())) {
-            throw new DataNotFoundException("Нет такого фильма");
+    public Optional<Film> update(Film filmUp) {
+        if (filmDbStorage.getFilmById(filmUp.getId()).isEmpty()) {
+            throw new DataNotFoundException("Нет такого id");
         }
-        validationFilm(film);
-        return filmStorage.update(film);
+        return filmDbStorage.update(filmUp);
     }
 
-    public void delete(long id) {
-        Film film = filmStorage.getFilmById(id);
-        validationFilm(film);
-        filmStorage.delete(film);
+    public Optional<Film> getFilm(long id) {
+        if (filmDbStorage.getFilmById(id).isEmpty()) {
+            throw new DataNotFoundException("Нет такого id");
+        }
+        return filmDbStorage.getFilmById(id);
     }
 
     public void addLike(long id, long userId) {
-        Film film = filmStorage.getFilmById(id);
-        userStorage.getUserById(userId);
-        film.addLike(userId);
+        filmDbStorage.addLike(id, userId);
     }
 
-    public void deleteLike(long id, long userId) {
-        Film film = filmStorage.getFilmById(id);
-        userStorage.getUserById(userId);
-        film.removeLike(userId);
+    public void deleteLike(int id, int userId) {
+        if (userDbStorage.getUserById(userId).isEmpty()) {
+            throw new DataNotFoundException("Нет такого id - пользователя");
+        }
+        filmDbStorage.removeLike(id, userId);
     }
 
+    public List<Film> findAll() {
+        return filmDbStorage.getAllFilms();
+    }
 
     public List<Film> getPopularFilms(int count) {
-        return filmStorage.getFilms().values().stream()
-                .sorted(Comparator.comparing(Film::getRate).reversed())
-                .limit(count)
-                .collect(Collectors.toList());
+        return filmDbStorage.getPopularFilms(count);
     }
 
-    public Film getFilmById(long id) {
-        return filmStorage.getFilmById(id);
+    public void delete(long id) {
+        if (filmDbStorage.getFilmById(id).isEmpty()) {
+            throw new DataNotFoundException("Нет такого id - фильма");
+        }
+        filmDbStorage.delete(id);
     }
 }

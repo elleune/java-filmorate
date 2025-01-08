@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -27,43 +28,43 @@ public class FilmController {
         this.filmService = filmService;
     }
 
-    @GetMapping
-    public List<Film> findAll() {
-        return filmService.findAll();
-    }
-
     @PostMapping
     public Film create(@RequestBody Film film) {
         return filmService.create(film);
     }
 
     @PutMapping
-    public Film update(@RequestBody Film film) {
+    public Optional<Film> put(@RequestBody Film film) {
         return filmService.update(film);
     }
 
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable("id") Long id) {
-        filmService.delete(id);
-    }
-
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable("id") long id) {
-        return filmService.getFilmById(id);
+    public Optional<Film> getFilmById(@PathVariable("id") Integer id) {
+        return filmService.getFilm(id);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable("id") long id, @PathVariable("userId") long userId) {
+    public void addLike(@PathVariable("id") int id, @PathVariable("userId") int userId) {
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLike(@PathVariable("id") long id, @PathVariable("userId") long userId) {
+    public void deleteLike(@PathVariable("id") int id, @PathVariable("userId") int userId) {
         filmService.deleteLike(id, userId);
+    }
+
+    @GetMapping
+    public List<Film> findAll() {
+        return filmService.findAll();
     }
 
     @GetMapping("/popular")
     public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
         return filmService.getPopularFilms(count);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable("id") Integer id) {
+        filmService.delete(id);
     }
 }
