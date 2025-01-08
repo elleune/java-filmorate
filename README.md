@@ -3,7 +3,7 @@ Template repository for Filmorate project.
 
 # Схема базы данных 
 ***
-![text](filmorate123.png)
+![text](image/filmorate123.png)
 ***
 
 ## Описание схемы базы данных
