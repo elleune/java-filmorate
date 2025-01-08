@@ -8,28 +8,28 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.service.genre.GenreService;
+import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.service.mpa.InMemoryMpaRatingService;
 
 import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/genres")
+@RequestMapping("/mpa")
 @RequiredArgsConstructor
-public class GenreController {
-    private final GenreService genreServiceImpl;
+public class MpaRatingController {
 
+    private final InMemoryMpaRatingService mpaRatingService;
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Genre getGenreById(@PathVariable int id) {
-        return genreServiceImpl.getGenreById(id);
+    public Mpa getMpaById(@PathVariable int id) {
+        return mpaRatingService.getMpaById(id);
     }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<Genre> findAll() {
-        return genreServiceImpl.getAllGenres();
+    public List<Mpa> findAll() {
+        return mpaRatingService.getAll();
     }
 }

@@ -1,34 +1,32 @@
 package ru.yandex.practicum.filmorate.model;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 import java.time.LocalDate;
-import java.util.Objects;
+import java.util.HashSet;
+import java.util.Set;
 
-@Getter
-@Setter
-@ToString(callSuper = true)
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class User {
     private Long id;
+    @Email(message = "Электронная почта должна содержать символ @.")
+    @NotNull(message = "Электронная почта не может быть пустой.")
+    @NotBlank(message = "Электронная почта не может содержать пробелы.")
     private String email;
+    @NotNull(message = "Логин не может быть пустым.")
+    @NotBlank(message = "Логин не может содержать пробелы.")
     private String login;
     private String name;
     private LocalDate birthday;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return id == user.id && name.equals(user.name) && email.equals(user.email)
-                && Objects.equals(birthday, user.birthday);
-    }
+    @Builder.Default
+    private Set<Long> friendsId = new HashSet<>();
 }

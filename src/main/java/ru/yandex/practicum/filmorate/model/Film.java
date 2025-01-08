@@ -1,45 +1,35 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-@Getter
-@Setter
-@ToString(callSuper = true)
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class Film {
-
     private Long id;
+    @NotNull(message = "Название фильма не может быть пустым.")
+    @NotBlank(message = "Название фильма не может быть пустым.")
     private String name;
-    private LocalDate releaseDate;
+    @Size(max = 200, message = "Максимальная длина описания - 200 символов.")
     private String description;
-    private long duration;
+    private LocalDate releaseDate;
+    @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT)
+    private Integer duration;
+    @Builder.Default
+    private Set<Long> idUserLike = new HashSet<>();
+    @Builder.Default
+    private Set<Genre> genres = new HashSet<>();
     private Mpa mpa;
-    @Builder.Default
-    private Set<Long> likes = new HashSet<>();
-    @Builder.Default
-    private List<Genre> genres = new ArrayList<>();
-    @Builder.Default
-    private long rate = 0;
-
-    public Film(Long id, String name, LocalDate releaseDate, String description, long duration, Mpa mpa) {
-        this.id = id;
-        this.name = name;
-        this.releaseDate = releaseDate;
-        this.description = description;
-        this.duration = duration;
-        this.mpa = mpa;
-    }
 }

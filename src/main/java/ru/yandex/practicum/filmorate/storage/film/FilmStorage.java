@@ -3,22 +3,26 @@ package ru.yandex.practicum.filmorate.storage.film;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface FilmStorage {
+
+    List<Film> getPopularFilms(Integer genreId, Integer year);
+
+    List<Film> getCommonFilms(long userId, long friendId);
+
+    void removeLikeFromFilm(long filmId, long userId);
+
+    void addLikeToFilm(long filmId, long userId);
+
+    void deleteAllFilms();
+
+    void deleteFilmById(long filmId);
+
+    Film updateFilm(Film newFilm);
+
+    Film createFilm(Film film);
+
+    Film getFilmById(long id);
+
     List<Film> getAllFilms();
-
-    Film create(Film film);
-
-    Optional<Film> update(Film film);
-
-    void delete(long id);
-
-    Optional<Film> getFilmById(long id);
-
-    void addLike(long id, long userId);
-
-    void removeLike(int id, int userId);
-
-    List<Film> getPopularFilms(int count);
 }

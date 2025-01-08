@@ -1,80 +1,54 @@
-DROP TABLE IF EXISTS CLIENTS CASCADE;
-DROP TABLE IF EXISTS FRIENDSHIP CASCADE;
-DROP TABLE IF EXISTS FILMS CASCADE;
-DROP TABLE IF EXISTS GENRES CASCADE;
-DROP TABLE IF EXISTS COMB_FILMS_GENRES CASCADE;
-DROP TABLE IF EXISTS LIKES CASCADE;
-DROP TABLE IF EXISTS MPA CASCADE;
+drop table if exists users,friends,mpa_rating,films,likes,genres,films_genres;
 
-create table CLIENTS
+create table if not exists users
 (
-    CLIENT_ID    INTEGER               not null
-        primary key,
-    CLIENT_EMAIL CHARACTER VARYING(50) not null,
-    LOGIN        CHARACTER VARYING(50) not null,
-    CLIENT_NAME  CHARACTER VARYING(50),
-    BIRTHDAY     DATE                  not null
+    user_id  bigint primary key auto_increment,
+    email    varchar not null,
+    login    varchar not null,
+    name     varchar,
+    birthday date
 );
 
-create table FRIENDSHIP
+create table if not exists friends
 (
-    FRIENDSHIP_ID INTEGER auto_increment
-        primary key,
-    FRIEND1_ID    INTEGER not null,
-    FRIEND2_ID    INTEGER not null,
-    constraint FRIENDSHIP_CLIENT2_FK
-        foreign key (FRIEND2_ID) references CLIENTS
-            on delete cascade,
-    constraint FRIENDSHIP_CLIENTS_FK
-        foreign key (FRIEND1_ID) references CLIENTS
-            on delete cascade
+    user_id  bigint references users (user_id) on delete cascade,
+    friend_id bigint references users (user_id) on delete cascade,
+    status    enum ('confirmed','unconfirmed') default 'unconfirmed',
+    CONSTRAINT friends UNIQUE (user_id, friend_id)
 );
 
-create table MPA
+create table if not exists mpa_rating
 (
-    MPA_ID   INTEGER               not null
-        primary key,
-    MPA_INFO CHARACTER VARYING(50) not null
-);
-create table FILMS
-(
-    FILM_ID      INTEGER auto_increment
-        primary key,
-    FILM_NAME    CHARACTER VARYING(50)  not null,
-    RELEASE_DATE DATE                   not null,
-    DESCRIPTION  CHARACTER VARYING(200) not null,
-    DURATION     BIGINT,
-    MPA_ID       INTEGER                not null,
-    constraint FILMS_MPA_FK
-        foreign key (MPA_ID) references MPA
-);
-create table GENRES
-(
-    GENRE_ID   INTEGER               not null
-        primary key,
-    GENRE_NAME CHARACTER VARYING(50) not null
+    rating_id   int primary key,
+    rating_code varchar
 );
 
-create table COMB_FILMS_GENRES
+create table if not exists films
 (
-    COMB_ID INTEGER auto_increment
-        primary key,
-    GENRE_ID INTEGER not null,
-    FILM_ID  INTEGER not null,
-    constraint FILMS_GENRES2_FK
-        foreign key (FILM_ID) references FILMS,
-    constraint FILMS_GENRES_FK
-        foreign key (GENRE_ID) references GENRES
+    film_id      bigint primary key auto_increment,
+    name         varchar not null,
+    description  varchar(200),
+    release_date date,
+    duration     int,
+    rating_id    int references mpa_rating (rating_id)
 );
 
-create table LIKES
+create table if not exists likes
 (
-    LIKE_ID   INTEGER auto_increment
-        primary key,
-    CLIENT_ID INTEGER not null,
-    FILM_ID   INTEGER not null,
-    constraint LIKES_CLIENTS_FK
-        foreign key (CLIENT_ID) references CLIENTS,
-    constraint LIKES_FILMS_FK
-        foreign key (FILM_ID) references FILMS
+    user_id bigint references users (user_id) on delete cascade,
+    film_id bigint references films (film_id) on delete cascade,
+    CONSTRAINT likes UNIQUE (user_id, film_id)
+);
+
+create table if not exists genres
+(
+    genre_id int primary key,
+    name     varchar not null
+);
+
+create table if not exists films_genres
+(
+    film_id  bigint references films (film_id),
+    genre_id bigint references genres (genre_id),
+    CONSTRAINT films_genres UNIQUE (film_id, genre_id)
 );
