@@ -49,5 +49,9 @@ public class Validator {
             log.error("Ошибка валидации продолжительности фильма");
             throw new ValidationException(HttpStatus.BAD_REQUEST, "Продолжительность фильма должна быть положительным числом");
         }
+        if (film.getMpa() == null) {
+            log.error("Некорректное MPA");
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "Некорректное MPA");
+        }
     }
 }

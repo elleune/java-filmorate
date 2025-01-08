@@ -1,0 +1,4 @@
+insert into FILMS(FILM_ID, FILM_NAME,  RELEASE_DATE, DESCRIPTION, DURATION, MPA_ID)
+values (1, 'name1', '2000-10-10', 'java1', 100, 1);
+insert into FILMS(FILM_ID, FILM_NAME,  RELEASE_DATE, DESCRIPTION, DURATION, MPA_ID)
+values (2, 'name2', '2020-10-10', 'java2', 120, 3);
