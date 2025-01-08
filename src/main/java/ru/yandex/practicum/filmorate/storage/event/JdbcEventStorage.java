@@ -16,22 +16,13 @@ public class JdbcEventStorage extends BaseRepository<Event> implements EventStor
     public JdbcEventStorage(JdbcTemplate jdbc, RowMapper<Event> mapper) {
         super(jdbc, mapper);
     }
-
-
-    private final String CREATE_EVENT_QUERY = """
-            INSERT INTO events (TIMESTAMP,USER_ID,EVENT_TYPE,OPERATION,ENTITY_ID)
-            VALUES (?, ?, ?, ?, ?)
-            """;
-
-    private final String GET_EVENT_BY_USER_ID_QUERY = """
-            SELECT *
-            FROM events
-            WHERE user_id = ?
-            """;
-
-
+    
     @Override
     public void createEvent(Event event) {
+        String CREATE_EVENT_QUERY = """
+                INSERT INTO events (TIMESTAMP,USER_ID,EVENT_TYPE,OPERATION,ENTITY_ID)
+                VALUES (?, ?, ?, ?, ?)
+                """;
         long id = insert(CREATE_EVENT_QUERY,
                 event.getTimestamp(),
                 event.getUserId(),
@@ -43,6 +34,11 @@ public class JdbcEventStorage extends BaseRepository<Event> implements EventStor
 
     @Override
     public List<Event> getEvenByUserId(long userId) {
+        String GET_EVENT_BY_USER_ID_QUERY = """
+                SELECT *
+                FROM events
+                WHERE user_id = ?
+                """;
         return findMany(GET_EVENT_BY_USER_ID_QUERY, userId);
     }
 }
