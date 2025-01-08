@@ -27,6 +27,5 @@ public class User {
     private String login;
     private String name;
     private LocalDate birthday;
-    @Builder.Default
     private Set<Long> friendsId = new HashSet<>();
 }
