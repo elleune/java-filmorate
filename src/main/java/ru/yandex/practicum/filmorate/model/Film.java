@@ -1,40 +1,38 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-@Getter
-@Setter
-@ToString(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 @Builder
 public class Film {
-    private Long id;
+    private int id;
     private String name;
-    private LocalDate releaseDate;
     private String description;
-    private long duration;
+    private LocalDate releaseDate;
+    private int duration;
     @Builder.Default
-    private Set<Long> userId = new HashSet<>();
+    private Set<Integer> likes = new HashSet<Integer>();
     @Builder.Default
-    private long rate = 0;
+    private List<Genres> genres = new ArrayList<>();
+    private MPA mpa;
 
-    public void addLike(long id) {
-        userId.add(id);
-        rate = userId.size();
+    public void setLike(Integer id) {
+        if (likes == null) {
+            likes = new HashSet<>();
+        }
+        likes.add(id);
     }
 
-    public void removeLike(long id) {
-        userId.remove(id);
-        rate = userId.size();
+    public void deleteLike(Integer id) {
+        if (likes.contains(id)) {
+            likes.remove(id);
+        }
     }
 }

@@ -1,92 +1,89 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
+import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
-import ru.yandex.practicum.filmorate.validator.Validator;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 public class UserService {
-
-    private final UserStorage userStorage;
-    private long userId = 0L;
-
     @Autowired
+    @Qualifier("userDbStorage")
+    private final UserStorage userStorage;
+
     public UserService(UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
-    public void validationUser(User user) {
-        Validator.validationUser(user);
+    public void addFriend(Integer id, Integer friendId) throws ValidationException {
+        User user = userStorage.findUserById(id);
+        User friend = userStorage.findUserById(friendId);
+        if (user != null && friend != null) {
+            user.addFriend(friendId);
+            userStorage.update(user);
+        }
     }
 
-    public List<User> findAll() {
-        return new ArrayList<>(userStorage.getUsers().values());
+    public void deleteFriend(Integer id, Integer friendId) throws ValidationException {
+        User user = userStorage.findUserById(id);
+        User friend = userStorage.findUserById(friendId);
+        user.deleteFriend(friendId);
+        userStorage.update(user);
     }
 
-    public User create(User user) {
-        validationUser(user);
-        userId++;
-        user.setId(userId);
+    public List<User> getAllFriends(Integer userId) {
+        User user = userStorage.findUserById(userId);
+        List<User> users = new ArrayList<>();
+        if (user.getFriends() != null) {
+            user.getFriends().forEach(id -> users.add(userStorage.findUserById(id)));
+        }
+        return users;
+    }
+
+    public Collection<User> findAll() {
+        return userStorage.findAll();
+    }
+
+    public User findById(Integer id) {
+        return userStorage.findUserById(id);
+    }
+
+    public User create(User user) throws ValidationException {
         return userStorage.create(user);
     }
 
-    public User update(User user) {
-        Map<Long, User> actualUsers = userStorage.getUsers();
-        if (!actualUsers.containsKey(user.getId())) {
-            throw new DataNotFoundException("Нет такого id");
-        }
-        validationUser(user);
+    public User update(User user) throws ValidationException, ResourceNotFoundException {
         return userStorage.update(user);
     }
 
-    public void delete(long id) {
-        User user = userStorage.getUserById(id);
-        validationUser(user);
-        userStorage.delete(user);
-    }
-
-    public void addFriend(long id, long friendId) {
-        User firstFriend = userStorage.getUserById(id);
-        User secondFriend = userStorage.getUserById(friendId);
-        firstFriend.getFriendsId().add(friendId);
-        secondFriend.getFriendsId().add(id);
-        secondFriend.getName();
-    }
-
-    public void deleteFriend(long id, long friendId) {
-        User user = userStorage.getUserById(id);
-        User userFriend = userStorage.getUserById(friendId);
-        user.getFriendsId().remove(friendId);
-        userFriend.getFriendsId().remove(id);
-    }
-
-    public List<User> getCommonFriend(long id, long otherId) {
-        Map<Long, User> actualUsers = userStorage.getUsers();
-        User firstFriend = userStorage.getUserById(id);
-        User secondFriend = userStorage.getUserById(otherId);
-        List<Long> firstFriendsList = firstFriend.getFriendsId();
-        List<Long> secondFriendsList = secondFriend.getFriendsId();
-        if (firstFriendsList.isEmpty() || secondFriendsList.isEmpty()) {
-            return new ArrayList<>();
+    public List<User> findAllCommonFriends(Integer userId, Integer otherId) {
+        List<User> commonFriends = new ArrayList<>();
+        User user = userStorage.findUserById(userId);
+        List<User> users = new ArrayList<>();
+        if (user.getFriends() != null) {
+            user.getFriends().forEach(id -> users.add(userStorage.findUserById(id)));
         }
-        List<Long> commonIdList = firstFriendsList.stream().filter(secondFriendsList::contains)
-                .toList();
-        return commonIdList.stream().map(actualUsers::get).collect(Collectors.toList());
+        User user2 = userStorage.findUserById(otherId);
+        List<User> users2 = new ArrayList<>();
+        if (user2.getFriends() != null) {
+            user2.getFriends().forEach(id -> users2.add(userStorage.findUserById(id)));
+        }
+        for (User usr : users) {
+            if (users2.contains(usr)) {
+                commonFriends.add(usr);
+            }
+        }
+        return commonFriends;
     }
 
-    public List<User> getFriendsList(long id) {
-        User user = userStorage.getUserById(id);
-        Map<Long, User> actualUsers = userStorage.getUsers();
-        return user.getFriendsId().stream().map(actualUsers::get).collect(Collectors.toList());
+    public boolean checkUserExist(Integer id) throws Exception {
+        return userStorage.checkUserExist(id);
     }
 }

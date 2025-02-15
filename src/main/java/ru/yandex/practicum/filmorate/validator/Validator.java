@@ -45,7 +45,7 @@ public class Validator {
             log.error("Ошибка валидации даты создания");
             throw new ValidationException(HttpStatus.BAD_REQUEST, "Дата реализации - не раньше 28 декабря 1895 года");
         }
-        if (film.getDuration() <= 0)  {
+        if (film.getDuration() <= 0) {
             log.error("Ошибка валидации продолжительности фильма");
             throw new ValidationException(HttpStatus.BAD_REQUEST, "Продолжительность фильма должна быть положительным числом");
         }

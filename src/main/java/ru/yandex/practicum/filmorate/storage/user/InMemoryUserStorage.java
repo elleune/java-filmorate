@@ -2,55 +2,70 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
+import org.springframework.web.bind.annotation.RequestBody;
+import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.validator.Validator;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 
-@Slf4j
 @Component
+@Slf4j
 public class InMemoryUserStorage implements UserStorage {
-
-    private final Map<Long, User> users = new HashMap<>();
+    private final HashMap<Integer, User> users = new HashMap<>();
+    private int id = 0;
 
     @Override
-    public Map<Long, User> getUsers() {
-        return users;
+    public Collection<User> findAll() {
+        return users.values();
     }
 
     @Override
-    public User create(User user) {
+    public User create(@RequestBody User user) throws ValidationException {
+        Validator.validationUser(user);
+        id++;
+        user.setId(id);
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
         users.put(user.getId(), user);
-        log.debug("Создан новый пользователь с именем: {}", user.getName());
         return user;
     }
 
     @Override
-    public User update(User user) {
-        if (!users.containsKey(user.getId())) {
-            throw new RuntimeException("Нет такого id");
+    public User update(@RequestBody User user) throws ValidationException {
+        Validator.validationUser(user);
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
         }
-        users.put(user.getId(), user);
-        log.debug("Обновлены данные пользователя с именем: {}", user.getName());
+        if (users.containsKey(user.getId())) {
+            User tmpUser = users.get(user.getId());
+            tmpUser.setEmail(user.getEmail());
+            tmpUser.setLogin(user.getLogin());
+            tmpUser.setBirthday(user.getBirthday());
+            tmpUser.setName(user.getName());
+            users.replace(tmpUser.getId(), tmpUser);
+            user = tmpUser;
+        } else {
+            throw new ResourceNotFoundException("Пользователя с таким id не существует");
+        }
         return user;
     }
 
     @Override
-    public void delete(User user) {
-        if (!users.containsKey(user.getId())) {
-            throw new RuntimeException("Нет такого id");
+    public User findUserById(Integer id) {
+        User user = users.get(id);
+        if (user == null) {
+            throw new ResourceNotFoundException("Пользователя с таким id не существует");
+        } else {
+            return user;
         }
-        users.remove(user.getId());
-        log.debug("Пользователь с именем: {} удален", user.getName());
     }
 
     @Override
-    public User getUserById(long id) {
-        Map<Long, User> actualUsers = getUsers();
-        if (!actualUsers.containsKey(id)) {
-            throw new DataNotFoundException("Нет такого id - пользователя");
-        }
-        return actualUsers.get(id);
+    public boolean checkUserExist(Integer id) {
+        return true;
     }
 }

@@ -1,17 +1,18 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.util.Map;
+import java.util.Collection;
 
 public interface FilmStorage {
-    Map<Long, Film> getFilms();
+    public Film create(Film film) throws ValidationException;
 
-    Film create(Film film);
+    public Film update(Film film) throws ValidationException;
 
-    Film update(Film film);
+    public Collection<Film> findAll();
 
-    void delete(Film film);
+    public Film findById(Integer id);
 
-    Film getFilmById(long id);
+    boolean checkFilmExist(Integer id);
 }

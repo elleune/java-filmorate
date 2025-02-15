@@ -1,29 +1,31 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-@Getter
-@Setter
-@ToString(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 @Builder
 public class User {
-
-    private Long id;
+    private Integer id;
     private String email;
     private String login;
     private String name;
     private LocalDate birthday;
     @Builder.Default
-    private List<Long> friendsId = new ArrayList<>();
+    private Set<Integer> friends = new HashSet<Integer>();
+
+    public void addFriend(Integer id) {
+        if (friends == null) {
+            friends = new HashSet<>();
+        }
+        friends.add(id);
+    }
+
+    public void deleteFriend(Integer id) {
+        friends.remove(id);
+    }
 }
