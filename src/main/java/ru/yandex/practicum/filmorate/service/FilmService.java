@@ -1,86 +1,117 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.validator.Validator;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Collection;
 
-@Slf4j
 @Service
 public class FilmService {
-    private final Validator validator;
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-    private Long filmId = 0L;
+    private final UserService userService;
+    private final Validator validator;
 
     @Autowired
-    public FilmService(Validator validator, FilmStorage filmStorage, UserStorage userStorage) {
-        this.validator = validator;
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
+                       @Qualifier("userDbStorage") UserStorage userStorage,
+                       UserService userService, Validator validator) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.userService = userService;
+        this.validator = validator;
     }
 
-    public void validationFilm(Film film) {
-        validator.validationFilm(film);
-    }
-
-    public List<Film> findAll() {
-        return new ArrayList<>(filmStorage.getFilms().values());
+    public Collection<Film> findAll() {
+        return filmStorage.findAll();
     }
 
     public Film create(Film film) {
-        validationFilm(film);
-        filmId++;
-        film.setId(filmId);
+        validator.validationFilm(film);
         return filmStorage.create(film);
     }
 
     public Film update(Film film) {
-        Map<Long, Film> actualUsers = filmStorage.getFilms();
-        if (!actualUsers.containsKey(film.getId())) {
-            throw new DataNotFoundException("Нет такого фильма");
-        }
-        validationFilm(film);
+        validator.validationFilm(film);
+        checkFilmExists(film.getId());
         return filmStorage.update(film);
     }
 
-    public void delete(long id) {
-        Film film = filmStorage.getFilmById(id);
-        validationFilm(film);
-        filmStorage.delete(film);
+    public Film getFilmById(Long id) {
+        checkFilmExists(id);
+        return filmStorage.findById(id);
     }
 
-    public void addLike(long id, long userId) {
-        Film film = filmStorage.getFilmById(id);
-        userStorage.getUserById(userId);
-        film.addLike(userId);
+    public boolean addLike(Long filmId, Long userId) {
+        checkFilmExists(filmId);
+        userService.validateUserExists(userId);
+        return filmStorage.addLike(filmId, userId);
     }
 
-    public void deleteLike(long id, long userId) {
-        Film film = filmStorage.getFilmById(id);
-        userStorage.getUserById(userId);
-        film.removeLike(userId);
+    public boolean removeLike(Long filmId, Long userId) {
+        checkFilmExists(filmId);
+        userService.validateUserExists(userId);
+        return filmStorage.removeLike(filmId, userId);
     }
 
+    public Collection<Film> getPopularFilms(int count) {
+        return filmStorage.getPopularFilms(count);
+    }
 
-    public List<Film> getPopularFilms(int count) {
-        return filmStorage.getFilms().values().stream()
-                .sorted(Comparator.comparing(Film::getRate).reversed())
-                .limit(count)
+    public void deleteFilm(Long id) {
+        checkFilmExists(id);
+        filmStorage.delete(id);
+    }
+
+    private void checkFilmExists(Long filmId) {
+        if (filmId == null || filmStorage.findById(filmId) == null) {
+            throw new NotFoundException("Фильм с id = " + filmId + " не найден");
+        }
+    }
+/*
+    public void validationFilm(Film film) {
+        if (film.getName() == null || film.getName().isBlank()) {
+            throw new ValidationException("Название не может быть пустым");
+        }
+        if (film.getDescription() == null || film.getDescription().isBlank() || film.getDescription().length() > 200) {
+            throw new ValidationException("Максимальная длина описания - 200 символов");
+        }
+        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
+            throw new ValidationException( "Дата реализации - не раньше 28 декабря 1895 года");
+        }
+        if (film.getDuration() <= 0)  {
+            throw new ValidationException("Продолжительность фильма должна быть положительным числом");
+        }
+        if (film.getMpa() == null || film.getMpa().getId() == null) {
+            throw new ValidationException("Рейтинг MPA не может быть null");
+        }
+
+        mpaDbStorage.findById(film.getMpa().getId())
+                .orElseThrow(() -> new NotFoundException("MPA рейтинг не найден с id=" + film.getMpa().getId()));
+
+        if (film.getGenres() == null) {
+            throw new ValidationException("Жанры не могут быть null");
+        }
+        List<Long> genreIds = film.getGenres().stream()
+                .map(Genre::getId)
+                .distinct()
                 .collect(Collectors.toList());
-    }
-
-    public Film getFilmById(long id) {
-        return filmStorage.getFilmById(id);
-    }
+        List<Genre> existingGenres = genreDbStorage.findByIds(genreIds);
+        if (existingGenres.size() != genreIds.size()) {
+            Set<Long> existingIds = existingGenres.stream()
+                    .map(Genre::getId)
+                    .collect(Collectors.toSet());
+            for (Long id : genreIds) {
+                if (!existingIds.contains(id)) {
+                    throw new NotFoundException("Жанр не найден с id=" + id);
+                }
+            }
+        }
+    }*/
 }

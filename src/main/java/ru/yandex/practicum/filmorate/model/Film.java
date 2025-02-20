@@ -1,40 +1,38 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-@Getter
-@Setter
-@ToString(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Data
+@EqualsAndHashCode(of = "id")
 public class Film {
     private Long id;
+
+    @NotBlank(message = "Название не может быть пустым")
     private String name;
-    private LocalDate releaseDate;
+
+    @Size(max = 200, message = "Максимальная длина описания — 200 символов")
     private String description;
-    private long duration;
-    @Builder.Default
-    private Set<Long> userId = new HashSet<>();
-    @Builder.Default
-    private long rate = 0;
 
-    public void addLike(long id) {
-        userId.add(id);
-        rate = userId.size();
-    }
+    @NotNull(message = "Дата релиза не может быть null")
+    @PastOrPresent(message = "Дата релиза не может быть в будущем")
+    private LocalDate releaseDate;
 
-    public void removeLike(long id) {
-        userId.remove(id);
-        rate = userId.size();
-    }
+    @Min(value = 1, message = "Продолжительность фильма должна быть положительным числом")
+    private int duration;
+
+    @NotNull(message = "Рейтинг MPA не может быть null")
+    private MpaRating mpa;
+
+    @NotNull(message = "Жанры не могут быть null")
+    private Set<Genre> genres = new HashSet<>();
 }
