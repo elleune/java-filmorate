@@ -51,8 +51,12 @@ public class Validator {
     }
 
     public void validationFilm(Film film) {
+        if (film == null) {
+            log.error("Фильм не может быть null");
+            throw new ValidationException(HttpStatus.BAD_REQUEST, "Фильм не может быть null");
+        }
         if (film.getName() == null || film.getName().isBlank()) {
-            log.error("Ошибка валидации фильма");
+            log.error("Ошибка валидации названия фильма");
             throw new ValidationException(HttpStatus.BAD_REQUEST, "Название не может быть пустым");
         }
         if (film.getDescription() == null || film.getDescription().isBlank() || film.getDescription().length() > 200) {

@@ -74,44 +74,4 @@ public class FilmService {
             throw new NotFoundException("Фильм с id = " + filmId + " не найден");
         }
     }
-/*
-    public void validationFilm(Film film) {
-        if (film.getName() == null || film.getName().isBlank()) {
-            throw new ValidationException("Название не может быть пустым");
-        }
-        if (film.getDescription() == null || film.getDescription().isBlank() || film.getDescription().length() > 200) {
-            throw new ValidationException("Максимальная длина описания - 200 символов");
-        }
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            throw new ValidationException( "Дата реализации - не раньше 28 декабря 1895 года");
-        }
-        if (film.getDuration() <= 0)  {
-            throw new ValidationException("Продолжительность фильма должна быть положительным числом");
-        }
-        if (film.getMpa() == null || film.getMpa().getId() == null) {
-            throw new ValidationException("Рейтинг MPA не может быть null");
-        }
-
-        mpaDbStorage.findById(film.getMpa().getId())
-                .orElseThrow(() -> new NotFoundException("MPA рейтинг не найден с id=" + film.getMpa().getId()));
-
-        if (film.getGenres() == null) {
-            throw new ValidationException("Жанры не могут быть null");
-        }
-        List<Long> genreIds = film.getGenres().stream()
-                .map(Genre::getId)
-                .distinct()
-                .collect(Collectors.toList());
-        List<Genre> existingGenres = genreDbStorage.findByIds(genreIds);
-        if (existingGenres.size() != genreIds.size()) {
-            Set<Long> existingIds = existingGenres.stream()
-                    .map(Genre::getId)
-                    .collect(Collectors.toSet());
-            for (Long id : genreIds) {
-                if (!existingIds.contains(id)) {
-                    throw new NotFoundException("Жанр не найден с id=" + id);
-                }
-            }
-        }
-    }*/
 }
