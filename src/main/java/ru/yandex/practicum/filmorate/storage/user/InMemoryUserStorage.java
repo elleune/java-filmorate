@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.storage.user;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.friendship.InMemoryFriendsStorage;
+import ru.yandex.practicum.filmorate.storage.friendship.InMemoryFriendshipStorage;
 
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
-    private final InMemoryFriendsStorage friendshipStorage;
+    private final InMemoryFriendshipStorage friendshipStorage;
 
     @Override
     public List<User> getAll() {
