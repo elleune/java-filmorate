@@ -1,51 +1,51 @@
 package ru.yandex.practicum.filmorate.storage.friendship;
 
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.Friends;
+import ru.yandex.practicum.filmorate.model.Friendship;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
+import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Optional;
 
 @Component
-public class InMemoryFriendsStorage implements FriendsStorage {
-    private final Set<Friends> friends = new HashSet<>();
+public class InMemoryFriendshipStorage implements FriendshipStorage {
+    private final Set<Friendship> friendships = new HashSet<>();
 
     @Override
-    public List<Friends> findAll() {
-        return new ArrayList<>(friends);
+    public List<Friendship> findAll() {
+        return new ArrayList<>(friendships);
     }
 
     @Override
     public void create(long userId, long friendId) {
-        Optional<Friends> friendshipOp = friends.stream()
+        Optional<Friendship> friendshipOp = friendships.stream()
                 .filter(f -> f.getUserId() == userId && f.getFriendId() == friendId)
                 .findFirst();
 
-        Optional<Friends> friendFriendshipOp = friends.stream()
+        Optional<Friendship> friendFriendshipOp = friendships.stream()
                 .filter(f -> f.getUserId() == friendId && f.getFriendId() == userId)
                 .findFirst();
 
         if ((friendshipOp.isEmpty())) {
             friendFriendshipOp.ifPresent(friendship -> friendship.setAccepted(true));
             if (friendFriendshipOp.isPresent()) {
-                friends.add(new Friends(userId, friendId, true));
+                friendships.add(new Friendship(userId, friendId, true));
             } else {
-                friends.add(new Friends(userId, friendId, false));
+                friendships.add(new Friendship(userId, friendId, false));
             }
         }
     }
 
     @Override
     public void remove(long userId, long friendId) {
-        Optional<Friends> friendshipOp = friends.stream()
+        Optional<Friendship> friendshipOp = friendships.stream()
                 .filter(f -> f.getUserId() == userId && f.getFriendId() == friendId)
                 .findFirst();
-        friendshipOp.ifPresent(friends::remove);
+        friendshipOp.ifPresent(friendships::remove);
 
-        friendshipOp = friends.stream()
+        friendshipOp = friendships.stream()
                 .filter(f -> f.getUserId() == friendId && f.getFriendId() == userId)
                 .findFirst();
         friendshipOp.ifPresent(friendship -> friendship.setAccepted(false));
@@ -53,6 +53,6 @@ public class InMemoryFriendsStorage implements FriendsStorage {
 
     @Override
     public void clear() {
-        friends.clear();
+        friendships.clear();
     }
 }
