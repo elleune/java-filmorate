@@ -3,30 +3,30 @@ package ru.yandex.practicum.filmorate.storage.friendship;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.Friends;
-import ru.yandex.practicum.filmorate.storage.dal.repository.FriendsRepository;
+import ru.yandex.practicum.filmorate.model.Friendship;
+import ru.yandex.practicum.filmorate.storage.dal.repository.FriendshipRepository;
 
 import java.util.List;
 
 @Component
 @Primary
 @RequiredArgsConstructor
-public class FriendsDbStorage implements FriendsStorage {
-    final FriendsRepository friendsRepository;
+public class FriendshipDbStorage implements FriendshipStorage {
+    final FriendshipRepository friendshipRepository;
 
     @Override
-    public List<Friends> findAll() {
-        return friendsRepository.findAll();
+    public List<Friendship> findAll() {
+        return friendshipRepository.findAll();
     }
 
     @Override
     public void create(long userId, long friendId) {
-        friendsRepository.create(userId, friendId);
+        friendshipRepository.create(userId, friendId);
     }
 
     @Override
     public void remove(long userId, long friendId) {
-        friendsRepository.remove(userId, friendId);
+        friendshipRepository.remove(userId, friendId);
     }
 
     @Override
