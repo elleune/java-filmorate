@@ -3,12 +3,12 @@ package ru.yandex.practicum.filmorate.storage.dal.repository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.model.Friends;
+import ru.yandex.practicum.filmorate.model.Friendship;
 
 import java.util.List;
 
 @Repository
-public class FriendsRepository extends BaseRepository<Friends> {
+public class FriendshipRepository extends BaseRepository<Friendship> {
     private static final String FIND_ALL_QUERY = "SELECT * FROM friendships";
     private static final String INSERT_QUERY = "INSERT INTO friendships (user_id, friend_id, is_accepted) " +
             "SELECT ?, ?, (SELECT count(*) FROM friendships WHERE user_id = ? AND friend_id = ?) FROM dual";
@@ -16,11 +16,11 @@ public class FriendsRepository extends BaseRepository<Friends> {
     private static final String DELETE_QUERY = "DELETE FROM friendships WHERE user_id = ? AND friend_id = ?";
     private static final String REMOVE_ACCEPT_QUERY = "UPDATE friendships SET is_accepted = false WHERE user_id = ? AND friend_id = ?";
 
-    public FriendsRepository(JdbcTemplate jdbc, RowMapper<Friends> mapper) {
+    public FriendshipRepository(JdbcTemplate jdbc, RowMapper<Friendship> mapper) {
         super(jdbc, mapper);
     }
 
-    public List<Friends> findAll() {
+    public List<Friendship> findAll() {
         return findMany(FIND_ALL_QUERY);
     }
 
@@ -39,3 +39,4 @@ public class FriendsRepository extends BaseRepository<Friends> {
     }
 
 }
+
