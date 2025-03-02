@@ -21,7 +21,7 @@ import java.util.Optional;
 public class UserService {
     static final String NOT_FOUND_MESSAGE = "Пользователь с id = %s не найден";
     final UserStorage userStorage;
-    final FriendsStorage friendshipStorage;
+    final FriendsStorage friendsStorage;
 
     public List<User> findAll() {
         return userStorage.getAll();
@@ -60,8 +60,11 @@ public class UserService {
             } else {
                 user.setName(user.getName());
             }
-            return userStorage.update(user);
+            User currentUser = userStorage.update(user);
+            log.debug(currentUser.toString());
+            return currentUser;
         } else {
+            log.error(String.format(NOT_FOUND_MESSAGE, user.getId()));
             throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, user.getId()));
         }
     }
@@ -71,6 +74,7 @@ public class UserService {
         if (user.isPresent()) {
             return userStorage.findFriendsById(id);
         } else {
+            log.error(String.format(NOT_FOUND_MESSAGE, id));
             throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
         }
     }
@@ -80,11 +84,13 @@ public class UserService {
         if (user.isPresent()) {
             Optional<User> friend = userStorage.getById(friendId);
             if (friend.isPresent()) {
-                friendshipStorage.create(id, friendId);
+                friendsStorage.create(id, friendId);
             } else {
+                log.error(String.format(NOT_FOUND_MESSAGE, friendId));
                 throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, friendId));
             }
         } else {
+            log.error(String.format(NOT_FOUND_MESSAGE, id));
             throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
         }
     }
@@ -94,11 +100,13 @@ public class UserService {
         if (user.isPresent()) {
             Optional<User> friend = userStorage.getById(friendId);
             if (friend.isPresent()) {
-                friendshipStorage.remove(id, friendId);
+                friendsStorage.remove(id, friendId);
             } else {
+                log.error(String.format(NOT_FOUND_MESSAGE, friendId));
                 throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, friendId));
             }
         } else {
+            log.error(String.format(NOT_FOUND_MESSAGE, id));
             throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
         }
     }
@@ -110,9 +118,11 @@ public class UserService {
             if (otherUser.isPresent()) {
                 return userStorage.findCommonFriends(id, otherId);
             } else {
+                log.error(String.format(NOT_FOUND_MESSAGE, otherId));
                 throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, otherId));
             }
         } else {
+            log.error(String.format(NOT_FOUND_MESSAGE, id));
             throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
         }
     }
@@ -134,5 +144,4 @@ public class UserService {
             throw new ValidationException("login", "Логин не может содержать пробелы");
         }
     }
-
 }
