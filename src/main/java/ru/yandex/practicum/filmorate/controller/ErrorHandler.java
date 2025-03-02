@@ -17,20 +17,20 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFound(final NotFoundException e) {
-        return new ErrorResponse("404 Not Found");
+        return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleParameterNotValid(final ValidationException e) {
-        return new ErrorResponse("400 Bad Request");
+        return new ErrorResponse("Некорректное значение параметра " + e.getParameter() + ": " + e.getReason());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleInvalidRequest(final MethodArgumentNotValidException e) {
         String field = Objects.requireNonNull(e.getBindingResult().getFieldError()).getField();
-        String errorMessage = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+        String errorMessage = e.getBindingResult().getAllErrors().getFirst().getDefaultMessage();
         return new ErrorResponse("400 Bad Request " + field + ": " + errorMessage);
     }
 
