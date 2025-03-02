@@ -1,40 +1,35 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
-@Getter
-@Setter
-@ToString(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
+
+@Data
+@EqualsAndHashCode(of = {"name", "releaseDate", "mpa", "genres"})
 @Builder
 public class Film {
-    private Long id;
-    private String name;
-    private LocalDate releaseDate;
-    private String description;
-    private long duration;
-    @Builder.Default
-    private Set<Long> userId = new HashSet<>();
-    @Builder.Default
-    private long rate = 0;
+    public static final LocalDate CINEMA_BIRTH_DAY = LocalDate.of(1895, 12, 28);
 
-    public void addLike(long id) {
-        userId.add(id);
-        rate = userId.size();
-    }
+    Long id;
+    @NotNull(message = "Не присвоено название фильма")
+    @NotBlank(message = "Название не может быть пустым")
+    String name;
 
-    public void removeLike(long id) {
-        userId.remove(id);
-        rate = userId.size();
-    }
+    @Size(max = 200, message = "Длина названия не должна превышать 200 символов")
+    String description;
+    LocalDate releaseDate;
+
+    @Positive(message = "Длительность не может быть отрицательной")
+    Integer duration;
+    Mpa mpa;
+
+    List<Genre> genres;
 }

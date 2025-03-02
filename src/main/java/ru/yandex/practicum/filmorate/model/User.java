@@ -1,29 +1,30 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
-@Getter
-@Setter
-@ToString(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
+@Data
 @Builder
 public class User {
+    Long id;
 
-    private Long id;
-    private String email;
-    private String login;
-    private String name;
-    private LocalDate birthday;
-    @Builder.Default
-    private List<Long> friendsId = new ArrayList<>();
+    @NotNull(message = "Не передан параметр email")
+    @NotBlank(message = "Email должен быть не пустым")
+    @Email(message = "Email неверный формат")
+    String email;
+
+    @NotNull(message = "Не передан параметр логина")
+    @NotBlank(message = "Логин не должен быть пустым")
+    String login;
+
+    String name;
+
+    @PastOrPresent(message = "День рождения не может быть в будущем")
+    LocalDate birthday;
 }
