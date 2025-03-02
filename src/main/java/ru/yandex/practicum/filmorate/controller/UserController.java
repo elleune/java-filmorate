@@ -56,6 +56,11 @@ public class UserController {
         return userService.findCommonFriends(id, otherId);
     }
 
+     @PutMapping("/{id}/friends/{friendId}/accept")
+    public void acceptFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        userService.acceptFriend(id, friendId);
+    }
+
     @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable Long id, @PathVariable Long friendId) {
         userService.addFriend(id, friendId);
