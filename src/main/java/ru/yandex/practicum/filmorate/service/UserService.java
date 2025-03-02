@@ -1,75 +1,138 @@
 package ru.yandex.practicum.filmorate.service;
 
-
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
+import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.friendship.FriendsStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
-import ru.yandex.practicum.filmorate.validator.Validator;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
-    private final UserStorage userStorage;
-    private final Validator validator;
+    static final String NOT_FOUND_MESSAGE = "Пользователь с id = %s не найден";
+    final UserStorage userStorage;
+    final FriendsStorage friendshipStorage;
 
-    @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage, Validator validator) {
-        this.userStorage = userStorage;
-        this.validator = validator;
-
+    public List<User> findAll() {
+        return userStorage.getAll();
     }
 
-    public Collection<User> findAll() {
-        return userStorage.findAll();
+    public User findById(Long id) {
+        Optional<User> user = userStorage.getById(id);
+        if (user.isPresent()) {
+            return user.get();
+        }
+        throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
     }
 
     public User create(User user) {
-        validator.validationUser(user);
-        return userStorage.create(user);
+        validate(user);
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
+
+        User createdUser = userStorage.create(user);
+        log.debug(createdUser.toString());
+        return createdUser;
     }
 
     public User update(User user) {
-        validator.validationUser(user);
-        validateUserExists(user.getId());
-        return userStorage.update(user);
-    }
+        if (user.getId() == null) {
+            throw new ConditionsNotMetException("Id должен быть указан");
+        }
 
-    public User getUserById(Long id) {
-        return userStorage.findById(id);
-    }
+        Optional<User> userOptional = userStorage.getById(user.getId());
 
-    public boolean addFriend(Long userId, Long friendId) {
-        validateUserExists(userId);
-        validateUserExists(friendId);
-        return userStorage.addFriend(userId, friendId);
-    }
-
-    public boolean removeFriend(Long userId, Long friendId) {
-        validateUserExists(userId);
-        validateUserExists(friendId);
-        return userStorage.removeFriend(userId, friendId);
-    }
-
-    public Collection<User> getFriends(Long id) {
-        validateUserExists(id);
-        return userStorage.getFriends(id);
-    }
-
-    public Collection<User> getCommonFriends(Long id, Long otherId) {
-        validateUserExists(id);
-        validateUserExists(otherId);
-        return userStorage.getCommonFriends(id, otherId);
-    }
-
-    public void validateUserExists(Long id) {
-        if (userStorage.findById(id) == null) {
-            throw new NotFoundException("Пользователь с id = " + id + " не найден");
+        if (userOptional.isPresent()) {
+            validate(user);
+            if (user.getName() == null || user.getName().isBlank()) {
+                user.setName(user.getLogin());
+            } else {
+                user.setName(user.getName());
+            }
+            return userStorage.update(user);
+        } else {
+            throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, user.getId()));
         }
     }
+
+    public List<User> findFriends(Long id) {
+        Optional<User> user = userStorage.getById(id);
+        if (user.isPresent()) {
+            return userStorage.findFriendsById(id);
+        } else {
+            throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
+        }
+    }
+
+    public void addFriend(Long id, Long friendId) {
+        Optional<User> user = userStorage.getById(id);
+        if (user.isPresent()) {
+            Optional<User> friend = userStorage.getById(friendId);
+            if (friend.isPresent()) {
+                friendshipStorage.create(id, friendId);
+            } else {
+                throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, friendId));
+            }
+        } else {
+            throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
+        }
+    }
+
+    public void removeFriend(Long id, Long friendId) {
+        Optional<User> user = userStorage.getById(id);
+        if (user.isPresent()) {
+            Optional<User> friend = userStorage.getById(friendId);
+            if (friend.isPresent()) {
+                friendshipStorage.remove(id, friendId);
+            } else {
+                throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, friendId));
+            }
+        } else {
+            throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
+        }
+    }
+
+    public List<User> findCommonFriends(Long id, Long otherId) {
+        Optional<User> user = userStorage.getById(id);
+        if (user.isPresent()) {
+            Optional<User> otherUser = userStorage.getById(otherId);
+            if (otherUser.isPresent()) {
+                return userStorage.findCommonFriends(id, otherId);
+            } else {
+                throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, otherId));
+            }
+        } else {
+            throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
+        }
+    }
+
+    private void validate(User user) throws DuplicatedDataException {
+        List<User> users = userStorage.getAll();
+
+        if (users.stream()
+                .anyMatch(u -> u.getEmail().equals(user.getEmail()) && !Objects.equals(u.getId(), user.getId()))) {
+            throw new DuplicatedDataException("Этот email уже используется");
+        }
+
+        if (users.stream()
+                .anyMatch(u -> u.getLogin().equals(user.getLogin()) && !Objects.equals(u.getId(), user.getId()))) {
+            throw new DuplicatedDataException("Этот логин уже используется");
+        }
+
+        if (user.getLogin().contains(" ")) {
+            throw new ValidationException("login", "Логин не может содержать пробелы");
+        }
+    }
+
 }

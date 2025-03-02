@@ -1,32 +1,35 @@
 package ru.yandex.practicum.filmorate.model;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
+
 
 @Data
-@EqualsAndHashCode(of = "id")
+@EqualsAndHashCode(of = {"name", "releaseDate", "mpa", "genres"})
+@Builder
 public class Film {
-    private Long id;
-    private String name;
+    public static final LocalDate CINEMA_BIRTH_DAY = LocalDate.of(1895, 12, 28);
 
-    @Size
-    private String description;
+    Long id;
+    @NotNull(message = "Не присвоено название фильма")
+    @NotBlank(message = "Название не может быть пустым")
+    String name;
 
-    @NotNull
-    @PastOrPresent
-    private LocalDate releaseDate;
-    private int duration;
+    @Size(max = 200, message = "Длина названия не должна превышать 200 символов")
+    String description;
+    LocalDate releaseDate;
 
-    @NotNull
-    private MpaRating mpa;
+    @Positive(message = "Длительность не может быть отрицательной")
+    Integer duration;
+    Mpa mpa;
 
-    @NotNull
-    private Set<Genre> genres = new HashSet<>();
+    List<Genre> genres;
 }

@@ -1,34 +1,30 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.MpaRating;
-import ru.yandex.practicum.filmorate.storage.mpa.MpaDbStorage;
+import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.service.MpaService;
 
 import java.util.List;
 
+@Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/mpa")
 public class MpaController {
-
-    private final MpaDbStorage mpaStorage;
-
-    public MpaController(@Qualifier("mpaDbStorage") MpaDbStorage mpaStorage) {
-        this.mpaStorage = mpaStorage;
-    }
+    private final MpaService mpaRatingService;
 
     @GetMapping
-    public List<MpaRating> findAll() {
-        return mpaStorage.findAll();
+    public List<Mpa> findAll() {
+        return mpaRatingService.findAll();
     }
 
     @GetMapping("/{id}")
-    public MpaRating findById(@PathVariable Long id) {
-        return mpaStorage.findById(id)
-                .orElseThrow(() -> new NotFoundException("MPA рейтинг не найден с id=" + id));
+    public Mpa findById(@PathVariable Long id) {
+        return mpaRatingService.findById(id);
     }
 }

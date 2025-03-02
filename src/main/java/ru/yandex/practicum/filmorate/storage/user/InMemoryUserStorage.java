@@ -1,86 +1,74 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.friendship.InMemoryFriendsStorage;
 
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Component
+@RequiredArgsConstructor
 public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong(0);
-    private final Map<Long, Set<Long>> friendships = new HashMap<>();
+    private final InMemoryFriendsStorage friendshipStorage;
 
     @Override
-    public Collection<User> findAll() {
-        return users.values();
+    public List<User> getAll() {
+        return users.values().stream().toList();
     }
 
     @Override
-    public User findById(Long id) {
-        return users.get(id);
+    public Optional<User> getById(long id) {
+        return users.get(id) == null ? Optional.empty() : Optional.of(users.get(id));
     }
 
     @Override
     public User create(User user) {
-        user.setId(idGenerator.incrementAndGet());
+        user.setId(getNextId());
         users.put(user.getId(), user);
         return user;
     }
 
     @Override
     public User update(User user) {
-        if (!users.containsKey(user.getId())) {
-            throw new NotFoundException("Пользователь с id = " + user.getId() + " не найден.");
-        }
         users.put(user.getId(), user);
         return user;
     }
 
     @Override
-    public void delete(Long id) {
-        if (!users.containsKey(id)) {
-            throw new NotFoundException("Пользователь с id = " + id + " не найден.");
-        }
-        users.remove(id);
+    public List<User> findFriendsById(long id) {
+        return friendshipStorage
+                .findAll()
+                .stream()
+                .filter(friendship -> friendship.getUserId() == id)
+                .map(friendship -> getById(friendship.getFriendId()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
     }
 
     @Override
-    public boolean addFriend(Long userId, Long friendId) {
-        friendships.computeIfAbsent(userId, k -> new HashSet<>()).add(friendId);
-        friendships.computeIfAbsent(friendId, k -> new HashSet<>()).add(userId);
-        return true;
+    public List<User> findCommonFriends(long id, long otherId) {
+        List<User> friends = findFriendsById(id);
+        List<User> otherFriends = findFriendsById(otherId);
+        return friends.stream().filter(otherFriends::contains).toList();
     }
 
     @Override
-    public boolean removeFriend(Long userId, Long friendId) {
-        friendships.getOrDefault(userId, new HashSet<>()).remove(friendId);
-        friendships.getOrDefault(friendId, new HashSet<>()).remove(userId);
-        return true;
+    public void clear() {
+        users.clear();
     }
 
-    @Override
-    public Collection<User> getFriends(Long id) {
-        return friendships.getOrDefault(id, new HashSet<>()).stream()
-                .map(users::get)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public Collection<User> getCommonFriends(Long id, Long otherId) {
-        Set<Long> friends1 = friendships.getOrDefault(id, new HashSet<>());
-        Set<Long> friends2 = friendships.getOrDefault(otherId, new HashSet<>());
-        Set<Long> common = new HashSet<>(friends1);
-        common.retainAll(friends2);
-        return common.stream()
-                .map(users::get)
-                .collect(Collectors.toList());
+    private long getNextId() {
+        long currentMaxId = users.keySet()
+                .stream()
+                .mapToLong(id -> id)
+                .max()
+                .orElse(0);
+        return ++currentMaxId;
     }
 }

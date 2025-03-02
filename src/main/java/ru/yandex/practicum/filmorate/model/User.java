@@ -3,32 +3,28 @@ package ru.yandex.practicum.filmorate.model;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Past;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.PastOrPresent;
+import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
-import java.util.Map;
 
 @Data
-@EqualsAndHashCode(of = "id")
+@Builder
 public class User {
-    private Long id;
+    Long id;
 
-    @NotBlank
-    @Email
-    private String email;
+    @NotNull(message = "Не передан параметр email")
+    @NotBlank(message = "Email должен быть не пустым")
+    @Email(message = "Email неверный формат")
+    String email;
 
-    @NotBlank
-    @Pattern(regexp = "^\\S*$", message = "Логин не должен содержать пробелы")
-    private String login;
+    @NotNull(message = "Не передан параметр логина")
+    @NotBlank(message = "Логин не должен быть пустым")
+    String login;
 
-    private String name;
+    String name;
 
-    @NotNull
-    @Past
-    private LocalDate birthday;
-
-    private Map<Long, String> friendshipStatus;
+    @PastOrPresent(message = "День рождения не может быть в будущем")
+    LocalDate birthday;
 }
