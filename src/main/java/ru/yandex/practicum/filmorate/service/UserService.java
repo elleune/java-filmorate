@@ -1,5 +1,3 @@
-package ru.yandex.practicum.filmorate.service;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -8,7 +6,7 @@ import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.friendship.FriendsStorage;
+import ru.yandex.practicum.filmorate.storage.friendship.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
@@ -21,7 +19,7 @@ import java.util.Optional;
 public class UserService {
     static final String NOT_FOUND_MESSAGE = "Пользователь с id = %s не найден";
     final UserStorage userStorage;
-    final FriendsStorage friendsStorage;
+    final FriendshipStorage friendshipStorage;
 
     public List<User> findAll() {
         return userStorage.getAll();
@@ -41,9 +39,7 @@ public class UserService {
             user.setName(user.getLogin());
         }
 
-        User createdUser = userStorage.create(user);
-        log.debug(createdUser.toString());
-        return createdUser;
+        return userStorage.create(user);
     }
 
     public User update(User user) {
@@ -64,7 +60,6 @@ public class UserService {
             log.debug(currentUser.toString());
             return currentUser;
         } else {
-            log.error(String.format(NOT_FOUND_MESSAGE, user.getId()));
             throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, user.getId()));
         }
     }
@@ -74,7 +69,6 @@ public class UserService {
         if (user.isPresent()) {
             return userStorage.findFriendsById(id);
         } else {
-            log.error(String.format(NOT_FOUND_MESSAGE, id));
             throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
         }
     }
@@ -84,13 +78,11 @@ public class UserService {
         if (user.isPresent()) {
             Optional<User> friend = userStorage.getById(friendId);
             if (friend.isPresent()) {
-                friendsStorage.create(id, friendId);
+                friendshipStorage.create(id, friendId);
             } else {
-                log.error(String.format(NOT_FOUND_MESSAGE, friendId));
                 throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, friendId));
             }
         } else {
-            log.error(String.format(NOT_FOUND_MESSAGE, id));
             throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
         }
     }
@@ -100,13 +92,11 @@ public class UserService {
         if (user.isPresent()) {
             Optional<User> friend = userStorage.getById(friendId);
             if (friend.isPresent()) {
-                friendsStorage.remove(id, friendId);
+                friendshipStorage.remove(id, friendId);
             } else {
-                log.error(String.format(NOT_FOUND_MESSAGE, friendId));
                 throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, friendId));
             }
         } else {
-            log.error(String.format(NOT_FOUND_MESSAGE, id));
             throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
         }
     }
@@ -118,11 +108,9 @@ public class UserService {
             if (otherUser.isPresent()) {
                 return userStorage.findCommonFriends(id, otherId);
             } else {
-                log.error(String.format(NOT_FOUND_MESSAGE, otherId));
                 throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, otherId));
             }
         } else {
-            log.error(String.format(NOT_FOUND_MESSAGE, id));
             throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
         }
     }
