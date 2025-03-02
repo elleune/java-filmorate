@@ -123,6 +123,7 @@ public class UserService {
             throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
         }
     }
+
     public void acceptFriend(Long id, Long friendId) {
         Optional<User> user = userStorage.getById(id);
         if (user.isPresent()) {
@@ -153,8 +154,7 @@ public class UserService {
         }
 
         if (user.getLogin().contains(" ")) {
-             throw new ValidationException("login", "Логин не может содержать пробелы");
+            throw new ValidationException("login", "Логин не может содержать пробелы");
         }
     }
-
 }
