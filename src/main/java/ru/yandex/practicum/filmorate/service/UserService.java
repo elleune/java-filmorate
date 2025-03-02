@@ -32,20 +32,26 @@ public class UserService {
         if (user.isPresent()) {
             return user.get();
         }
+        log.error(String.format(NOT_FOUND_MESSAGE, id));
         throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
     }
 
     public User create(User user) {
         validate(user);
         if (user.getName() == null || user.getName().isBlank()) {
+            log.warn("Не указано имя пользователя. Приравниваем его к логину");
             user.setName(user.getLogin());
         }
 
-        return userStorage.create(user);
+        User createdUser = userStorage.create(user);
+        log.info("Пользователь создан");
+        log.debug(createdUser.toString());
+        return createdUser;
     }
 
     public User update(User user) {
         if (user.getId() == null) {
+            log.error("Не указан id пользователя");
             throw new ConditionsNotMetException("Id должен быть указан");
         }
 
@@ -56,12 +62,15 @@ public class UserService {
             if (user.getName() == null || user.getName().isBlank()) {
                 user.setName(user.getLogin());
             } else {
+                log.warn("Не указано имя пользователя. Приравниваем его к логину");
                 user.setName(user.getName());
             }
             User currentUser = userStorage.update(user);
+            log.info("Пользователь обновлен");
             log.debug(currentUser.toString());
             return currentUser;
         } else {
+            log.error(String.format(NOT_FOUND_MESSAGE, user.getId()));
             throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, user.getId()));
         }
     }
@@ -71,6 +80,7 @@ public class UserService {
         if (user.isPresent()) {
             return userStorage.findFriendsById(id);
         } else {
+            log.error(String.format(NOT_FOUND_MESSAGE, id));
             throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
         }
     }
@@ -81,10 +91,13 @@ public class UserService {
             Optional<User> friend = userStorage.getById(friendId);
             if (friend.isPresent()) {
                 friendshipStorage.create(id, friendId);
+                log.info("Пользователь с id = {} добавил друга с id = {}", id, friendId);
             } else {
+                log.error(String.format(NOT_FOUND_MESSAGE, friendId));
                 throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, friendId));
             }
         } else {
+            log.error(String.format(NOT_FOUND_MESSAGE, id));
             throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
         }
     }
@@ -95,10 +108,13 @@ public class UserService {
             Optional<User> friend = userStorage.getById(friendId);
             if (friend.isPresent()) {
                 friendshipStorage.remove(id, friendId);
+                log.info("Пользователь с id = {} удалил друга с id = {}", id, friendId);
             } else {
+                log.error(String.format(NOT_FOUND_MESSAGE, friendId));
                 throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, friendId));
             }
         } else {
+            log.error(String.format(NOT_FOUND_MESSAGE, id));
             throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
         }
     }
@@ -110,9 +126,11 @@ public class UserService {
             if (otherUser.isPresent()) {
                 return userStorage.findCommonFriends(id, otherId);
             } else {
+                log.error(String.format(NOT_FOUND_MESSAGE, otherId));
                 throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, otherId));
             }
         } else {
+            log.error(String.format(NOT_FOUND_MESSAGE, id));
             throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
         }
     }
@@ -122,16 +140,20 @@ public class UserService {
 
         if (users.stream()
                 .anyMatch(u -> u.getEmail().equals(user.getEmail()) && !Objects.equals(u.getId(), user.getId()))) {
+            log.error("Email {} уже используется", user.getEmail());
             throw new DuplicatedDataException("Этот email уже используется");
         }
 
         if (users.stream()
                 .anyMatch(u -> u.getLogin().equals(user.getLogin()) && !Objects.equals(u.getId(), user.getId()))) {
+            log.error("Логин {} уже используется", user.getLogin());
             throw new DuplicatedDataException("Этот логин уже используется");
         }
 
         if (user.getLogin().contains(" ")) {
+            log.error("Логин {} уже содержит пробелы", user.getLogin());
             throw new ValidationException("login", "Логин не может содержать пробелы");
         }
     }
+
 }
