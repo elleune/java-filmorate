@@ -14,7 +14,7 @@ public class FriendshipMapper implements RowMapper<Friendship> {
         return Friendship.builder()
                 .userId(resultSet.getLong("user_id"))
                 .friendId(resultSet.getLong("friend_id"))
-                .isConfirmed(resultSet.getBoolean("is_confirmed"))
+                .isAccepted(resultSet.getBoolean("is_accepted"))
                 .build();
     }
 }
