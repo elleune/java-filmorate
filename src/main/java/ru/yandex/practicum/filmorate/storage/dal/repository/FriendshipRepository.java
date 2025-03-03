@@ -37,6 +37,4 @@ public class FriendshipRepository extends BaseRepository<Friendship> {
         delete(DELETE_QUERY, userId, friendId);
         update(REMOVE_ACCEPT_QUERY, friendId, userId);
     }
-
 }
-
