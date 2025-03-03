@@ -33,10 +33,4 @@ public class ErrorHandler {
         String errorMessage = e.getBindingResult().getAllErrors().getFirst().getDefaultMessage();
         return new ErrorResponse("400 Bad Request " + field + ": " + errorMessage);
     }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleGeneric(final Throwable e) {
-        return new ErrorResponse("500 Internal Server Error");
-    }
 }
