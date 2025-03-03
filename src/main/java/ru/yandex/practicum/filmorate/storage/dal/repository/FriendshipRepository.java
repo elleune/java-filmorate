@@ -10,11 +10,11 @@ import java.util.List;
 @Repository
 public class FriendshipRepository extends BaseRepository<Friendship> {
     private static final String FIND_ALL_QUERY = "SELECT * FROM friendships";
-    private static final String INSERT_QUERY = "INSERT INTO friendships (user_id, friend_id, is_confirmed) " +
+    private static final String INSERT_QUERY = "INSERT INTO friendships (user_id, friend_id, is_accepted) " +
             "SELECT ?, ?, (SELECT count(*) FROM friendships WHERE user_id = ? AND friend_id = ?) FROM dual";
-    private static final String ACCEPT_QUERY = "UPDATE friendships SET is_confirmed = 1 WHERE user_id = ? AND friend_id = ?";
+    private static final String ACCEPT_QUERY = "UPDATE friendships SET is_accepted = 1 WHERE user_id = ? AND friend_id = ?";
     private static final String DELETE_QUERY = "DELETE FROM friendships WHERE user_id = ? AND friend_id = ?";
-    private static final String REMOVE_ACCEPT_QUERY = "UPDATE friendships SET is_confirmed = false WHERE user_id = ? AND friend_id = ?";
+    private static final String REMOVE_ACCEPT_QUERY = "UPDATE friendships SET is_accepted = false WHERE user_id = ? AND friend_id = ?";
 
     public FriendshipRepository(JdbcTemplate jdbc, RowMapper<Friendship> mapper) {
         super(jdbc, mapper);
