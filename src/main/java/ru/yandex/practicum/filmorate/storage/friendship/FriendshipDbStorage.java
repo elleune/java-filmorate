@@ -1,7 +1,5 @@
 package ru.yandex.practicum.filmorate.storage.friendship;
 
-package ru.yandex.practicum.filmorate.storage.friendship;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Friendship;
