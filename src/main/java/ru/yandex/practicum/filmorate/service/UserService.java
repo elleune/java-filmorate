@@ -114,3 +114,4 @@ public class UserService {
             throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
         }
     }
+}
