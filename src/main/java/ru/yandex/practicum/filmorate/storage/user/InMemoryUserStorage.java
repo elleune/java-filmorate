@@ -51,12 +51,19 @@ public class InMemoryUserStorage implements UserStorage {
                 .toList();
     }
 
-    @Override
+ @Override
     public List<User> findCommonFriends(long id, long otherId) {
         List<User> friends = findFriendsById(id);
         List<User> otherFriends = findFriendsById(otherId);
-        return friends.stream().filter(otherFriends::contains).toList();
+        List<User> list = new ArrayList<>();
+        for (User friend : friends) {
+            if (otherFriends.contains(friend)) {
+                list.add(friend);
+            }
+        }
+        return list;
     }
+
 
     @Override
     public void clear() {
