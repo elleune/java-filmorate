@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.dal.repository.UserRepository;
@@ -9,9 +10,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
+@Primary
 @RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
-
     final UserRepository userRepository;
 
     @Override
@@ -20,7 +21,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public Optional<User> getById(Long id) {
+    public Optional<User> getById(long id) {
         return userRepository.findById(id);
     }
 
@@ -35,18 +36,17 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public void remove(Long userId) {
-        userRepository.remove(userId);
+    public List<User> findFriendsById(long id) {
+        return userRepository.findFriendsById(id);
     }
 
     @Override
-    public List<User> getFriends(User user) {
-        return userRepository.findFriendsById(user.getId());
+    public List<User> findCommonFriends(long id, long otherId) {
+        return userRepository.findCommonFriends(id, otherId);
     }
 
     @Override
-    public List<User> getFriendsCommonOther(User user, User otherUser) {
-        return userRepository.findCommonFriends(user.getId(), otherUser.getId());
+    public void clear() {
+        throw new UnsupportedOperationException("Очистка таблицы БД не поддерживается");
     }
-
 }
