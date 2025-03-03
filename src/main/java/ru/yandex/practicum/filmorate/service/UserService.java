@@ -3,10 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.friendship.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -19,142 +16,82 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    static final String NOT_FOUND_MESSAGE = "Пользователь с id = %s не найден";
-    final UserStorage userStorage;
-    final FriendshipStorage friendshipStorage;
 
-    public List<User> findAll() {
+    static final String USER_NOT_FOUNT_ERROR = "Пользователь с id = %d не найден";
+
+    private final UserStorage userStorage;
+
+    private final FriendshipStorage friendshipStorage;
+
+    public List<User> getAll() {
         return userStorage.getAll();
     }
 
-    public User findById(Long id) {
+    public User create(User user) {
+        user = userStorage.create(user);
+        return user;
+    }
+
+    public User getById(Long id) {
         Optional<User> user = userStorage.getById(id);
         if (user.isPresent()) {
             return user.get();
         }
-        throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
-    }
-
-    public User create(User user) {
-        validate(user);
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-
-        User createdUser = userStorage.create(user);
-        log.info("Пользователь создан");
-        log.debug(createdUser.toString());
-        return createdUser;
+        log.error(String.format(USER_NOT_FOUNT_ERROR, id));
+        throw new NotFoundException(String.format(USER_NOT_FOUNT_ERROR, id));
     }
 
     public User update(User user) {
-        if (user.getId() == null) {
-            log.error("Не указан id пользователя");
-            throw new ConditionsNotMetException("Id должен быть указан");
+
+        Optional<User> optionalUser = userStorage.getById(user.getId());
+        if (optionalUser.isEmpty()) {
+            log.error(String.format(USER_NOT_FOUNT_ERROR, user.getId()));
+            throw new NotFoundException(String.format(USER_NOT_FOUNT_ERROR, user.getId()));
         }
 
-        Optional<User> userOptional = userStorage.getById(user.getId());
-
-        if (userOptional.isPresent()) {
-            validate(user);
-            if (user.getName() == null || user.getName().isBlank()) {
-                user.setName(user.getLogin());
-            } else {
-                log.warn("Не указано имя пользователя. Приравниваем его к логину");
-                user.setName(user.getName());
-            }
-            User currentUser = userStorage.update(user);
-            log.info("Пользователь обновлен");
-            log.debug(currentUser.toString());
-            return currentUser;
-        } else {
-            throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, user.getId()));
-        }
+        user = userStorage.update(user);
+        return user;
     }
 
-    public List<User> findFriends(Long id) {
-        Optional<User> user = userStorage.getById(id);
-        if (user.isPresent()) {
-            return userStorage.findFriendsById(id);
-        } else {
-            throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
-        }
+    public void remove(Long id) {
+        userStorage.remove(id);
     }
 
-    public void addFriend(Long id, Long friendId) {
-        Optional<User> user = userStorage.getById(id);
-        if (user.isPresent()) {
-            Optional<User> friend = userStorage.getById(friendId);
-            if (friend.isPresent()) {
-                friendshipStorage.create(id, friendId);
-            } else {
-                throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, friendId));
-            }
-        } else {
-            throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
-        }
+    public List<User> getFriends(Long userId) {
+        User user = userStorage.getById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format(USER_NOT_FOUNT_ERROR, userId)));
+        return userStorage.getFriends(user);
     }
 
-    public void removeFriend(Long id, Long friendId) {
-        Optional<User> user = userStorage.getById(id);
-        if (user.isPresent()) {
-            Optional<User> friend = userStorage.getById(friendId);
-            if (friend.isPresent()) {
-                friendshipStorage.remove(id, friendId);
-            } else {
-                throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, friendId));
-            }
-        } else {
-            log.error(String.format(NOT_FOUND_MESSAGE, id));
-            throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
-        }
+    public List<User> getFriendsCommonOther(Long userId, Long otherUserId) {
+        User user = userStorage.getById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format(USER_NOT_FOUNT_ERROR, userId)));
+        User otherUser = userStorage.getById(otherUserId)
+                .orElseThrow(() -> new NotFoundException(String.format(USER_NOT_FOUNT_ERROR, otherUserId)));
+        return userStorage.getFriendsCommonOther(user, otherUser);
     }
 
-    public List<User> findCommonFriends(Long id, Long otherId) {
-        Optional<User> user = userStorage.getById(id);
-        if (user.isPresent()) {
-            Optional<User> otherUser = userStorage.getById(otherId);
-            if (otherUser.isPresent()) {
-                return userStorage.findCommonFriends(id, otherId);
-            } else {
-                throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, otherId));
-            }
-        } else {
-            throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
+    public void addFriend(Long userId, Long friendId) {
+        if (Objects.equals(userId, friendId)) {
+            throw new NotFoundException("Нельзя добавить в друзья самого себя");
         }
+
+        User user = userStorage.getById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format(USER_NOT_FOUNT_ERROR, userId)));
+        User friend = userStorage.getById(friendId)
+                .orElseThrow(() -> new NotFoundException(String.format(USER_NOT_FOUNT_ERROR, friendId)));
+        if (user.equals(friend))
+            throw new NotFoundException("Невозможно добавить в друзья самого себя");
+        friendshipStorage.create(user.getId(), friend.getId());
+        log.info("Пользователь с id = {} добавил друга с id = {}", userId, friendId);
     }
 
-    public void acceptFriend(Long id, Long friendId) {
-        Optional<User> user = userStorage.getById(id);
-        if (user.isPresent()) {
-            Optional<User> friend = userStorage.getById(friendId);
-            if (friend.isPresent()) {
-                friendshipStorage.create(id, friendId);
-            } else {
-                log.error(String.format(NOT_FOUND_MESSAGE, friendId));
-                throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, friendId));
-            }
-        } else {
-            log.error(String.format(NOT_FOUND_MESSAGE, id));
-            throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
-        }
-    }
-
-    private void validate(User user) throws DuplicatedDataException {
-        List<User> users = userStorage.getAll();
-
-        if (users.stream()
-                .anyMatch(u -> u.getEmail().equals(user.getEmail()) && !Objects.equals(u.getId(), user.getId()))) {
-            throw new DuplicatedDataException("Этот email уже используется");
-        }
-
-        if (users.stream()
-                .anyMatch(u -> u.getLogin().equals(user.getLogin()) && !Objects.equals(u.getId(), user.getId()))) {
-            throw new DuplicatedDataException("Этот логин уже используется");
-        }
-
-        if (user.getLogin().contains(" ")) {
-            throw new ValidationException("login", "Логин не может содержать пробелы");
-        }
+    public void removeFriend(Long userId, Long friendId) {
+        User user = userStorage.getById(userId)
+                .orElseThrow(() -> new NotFoundException(String.format(USER_NOT_FOUNT_ERROR, userId)));
+        User friend = userStorage.getById(friendId)
+                .orElseThrow(() -> new NotFoundException(String.format(USER_NOT_FOUNT_ERROR, friendId)));
+        friendshipStorage.remove(user.getId(), friend.getId());
+        log.info("Пользователь с id = {} удалил друга с id = {}", userId, friendId);
     }
 }
