@@ -3,11 +3,11 @@ package ru.yandex.practicum.filmorate.storage.friendship;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Friendship;
 
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 public class InMemoryFriendshipStorage implements FriendshipStorage {
@@ -24,19 +24,13 @@ public class InMemoryFriendshipStorage implements FriendshipStorage {
                 .filter(f -> f.getUserId() == userId && f.getFriendId() == friendId)
                 .findFirst();
 
-        Optional<Friendship> friendFriendshipOp = friendships.stream()
-                .filter(f -> f.getUserId() == friendId && f.getFriendId() == userId)
-                .findFirst();
-
         if ((friendshipOp.isEmpty())) {
-            friendFriendshipOp.ifPresent(friendship -> friendship.setAccepted(true));
-            if (friendFriendshipOp.isPresent()) {
-                friendships.add(new Friendship(userId, friendId, true));
-            } else {
-                friendships.add(new Friendship(userId, friendId, false));
-            }
+            friendships.add(new Friendship(userId, friendId, false));
+            friendships.add(new Friendship(friendId, userId, false));
         }
+         friendshipOp.ifPresent(friendships::add);
     }
+
 
     @Override
     public void remove(long userId, long friendId) {
@@ -48,7 +42,7 @@ public class InMemoryFriendshipStorage implements FriendshipStorage {
         friendshipOp = friendships.stream()
                 .filter(f -> f.getUserId() == friendId && f.getFriendId() == userId)
                 .findFirst();
-        friendshipOp.ifPresent(friendship -> friendship.setAccepted(false));
+        friendshipOp.ifPresent(friendships::remove);
     }
 
     @Override
