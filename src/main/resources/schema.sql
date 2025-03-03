@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS likes (
   PRIMARY KEY (user_id, film_id)
 );
 
-CREATE TABLE IF NOT EXISTS friends (
+CREATE TABLE IF NOT EXISTS friendships (
   user_id bigint,
   friend_id bigint,
   is_accepted bool,
@@ -48,9 +48,9 @@ ALTER TABLE likes ADD FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASC
 
 ALTER TABLE likes ADD FOREIGN KEY (film_id) REFERENCES films (id) ON DELETE CASCADE;
 
-ALTER TABLE friends ADD FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE;
+ALTER TABLE friendships ADD FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE;
 
-ALTER TABLE friends ADD FOREIGN KEY (friend_id) REFERENCES users (id) ON DELETE CASCADE;
+ALTER TABLE friendships ADD FOREIGN KEY (friend_id) REFERENCES users (id) ON DELETE CASCADE;
 
 ALTER TABLE film_genres ADD FOREIGN KEY (genre_id) REFERENCES genres (id) ON DELETE CASCADE;
 
