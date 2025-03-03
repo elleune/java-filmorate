@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.dal.mapper;
 
+package ru.yandex.practicum.filmorate.storage.dal.mapper;
 
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,7 @@ public class FriendshipMapper implements RowMapper<Friendship> {
         return Friendship.builder()
                 .userId(resultSet.getLong("user_id"))
                 .friendId(resultSet.getLong("friend_id"))
-                .isAccepted(resultSet.getBoolean("is_accepted"))
+                .isConfirmed(resultSet.getBoolean("is_confirmed"))
                 .build();
     }
 }
