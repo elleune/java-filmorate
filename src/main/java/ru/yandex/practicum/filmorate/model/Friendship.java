@@ -7,10 +7,10 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = "isConfirmed")
+@EqualsAndHashCode(exclude = "isAccepted")
 @Builder
 public class Friendship {
     Long userId;
     Long friendId;
-    boolean isConfirmed;
+    boolean isAccepted;
 }
