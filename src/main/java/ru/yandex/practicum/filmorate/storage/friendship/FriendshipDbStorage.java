@@ -1,7 +1,8 @@
 package ru.yandex.practicum.filmorate.storage.friendship;
 
+package ru.yandex.practicum.filmorate.storage.friendship;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.storage.dal.repository.FriendshipRepository;
@@ -9,28 +10,24 @@ import ru.yandex.practicum.filmorate.storage.dal.repository.FriendshipRepository
 import java.util.List;
 
 @Component
-@Primary
 @RequiredArgsConstructor
 public class FriendshipDbStorage implements FriendshipStorage {
+
     final FriendshipRepository friendshipRepository;
 
     @Override
-    public List<Friendship> findAll() {
+    public List<Friendship> getAll() {
         return friendshipRepository.findAll();
     }
 
     @Override
-    public void create(long userId, long friendId) {
+    public void create(Long userId, Long friendId) {
         friendshipRepository.create(userId, friendId);
     }
 
     @Override
-    public void remove(long userId, long friendId) {
+    public void remove(Long userId, Long friendId) {
         friendshipRepository.remove(userId, friendId);
     }
 
-    @Override
-    public void clear() {
-        throw new UnsupportedOperationException("Clearing the database table is not supported");
-    }
 }
