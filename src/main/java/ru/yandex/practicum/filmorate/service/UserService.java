@@ -1,92 +1,144 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.DataNotFoundException;
+import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
+import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.friendship.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
-import ru.yandex.practicum.filmorate.validator.Validator;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
-
-    private final UserStorage userStorage;
-    private long userId = 0L;
-
-    @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
-
-    public void validationUser(User user) {
-        Validator.validationUser(user);
-    }
+    static final String NOT_FOUND_MESSAGE = "Пользователь с id = %s не найден";
+    final UserStorage userStorage;
+    final FriendshipStorage friendshipStorage;
 
     public List<User> findAll() {
-        return new ArrayList<>(userStorage.getUsers().values());
+        return userStorage.getAll();
+    }
+
+    public User findById(Long id) {
+        Optional<User> user = userStorage.getById(id);
+        if (user.isPresent()) {
+            return user.get();
+        }
+        throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
     }
 
     public User create(User user) {
-        validationUser(user);
-        userId++;
-        user.setId(userId);
-        return userStorage.create(user);
+        validate(user);
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
+
+        User createdUser = userStorage.create(user);
+        log.debug(createdUser.toString());
+        return createdUser;
     }
 
     public User update(User user) {
-        Map<Long, User> actualUsers = userStorage.getUsers();
-        if (!actualUsers.containsKey(user.getId())) {
-            throw new DataNotFoundException("Нет такого id");
+        if (user.getId() == null) {
+            log.error("Не указан id пользователя");
+            throw new ConditionsNotMetException("Id должен быть указан");
         }
-        validationUser(user);
-        return userStorage.update(user);
-    }
 
-    public void delete(long id) {
-        User user = userStorage.getUserById(id);
-        validationUser(user);
-        userStorage.delete(user);
-    }
+        Optional<User> userOptional = userStorage.getById(user.getId());
 
-    public void addFriend(long id, long friendId) {
-        User firstFriend = userStorage.getUserById(id);
-        User secondFriend = userStorage.getUserById(friendId);
-        firstFriend.getFriendsId().add(friendId);
-        secondFriend.getFriendsId().add(id);
-        secondFriend.getName();
-    }
-
-    public void deleteFriend(long id, long friendId) {
-        User user = userStorage.getUserById(id);
-        User userFriend = userStorage.getUserById(friendId);
-        user.getFriendsId().remove(friendId);
-        userFriend.getFriendsId().remove(id);
-    }
-
-    public List<User> getCommonFriend(long id, long otherId) {
-        Map<Long, User> actualUsers = userStorage.getUsers();
-        User firstFriend = userStorage.getUserById(id);
-        User secondFriend = userStorage.getUserById(otherId);
-        List<Long> firstFriendsList = firstFriend.getFriendsId();
-        List<Long> secondFriendsList = secondFriend.getFriendsId();
-        if (firstFriendsList.isEmpty() || secondFriendsList.isEmpty()) {
-            return new ArrayList<>();
+        if (userOptional.isPresent()) {
+            validate(user);
+            if (user.getName() == null || user.getName().isBlank()) {
+                user.setName(user.getLogin());
+            } else {
+                log.warn("Не указано имя пользователя. Приравниваем его к логину");
+                user.setName(user.getName());
+            }
+            User currentUser = userStorage.update(user);
+            log.debug(currentUser.toString());
+            return currentUser;
+        } else {
+            throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, user.getId()));
         }
-        List<Long> commonIdList = firstFriendsList.stream().filter(secondFriendsList::contains)
-                .toList();
-        return commonIdList.stream().map(actualUsers::get).collect(Collectors.toList());
     }
 
-    public List<User> getFriendsList(long id) {
-        User user = userStorage.getUserById(id);
-        Map<Long, User> actualUsers = userStorage.getUsers();
-        return user.getFriendsId().stream().map(actualUsers::get).collect(Collectors.toList());
+    public List<User> findFriends(Long id) {
+        Optional<User> user = userStorage.getById(id);
+        if (user.isPresent()) {
+            return userStorage.findFriendsById(id);
+        } else {
+            throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
+        }
+    }
+
+    public void addFriend(Long id, Long friendId) {
+        Optional<User> user = userStorage.getById(id);
+        if (user.isPresent()) {
+            Optional<User> friend = userStorage.getById(friendId);
+            if (friend.isPresent()) {
+                friendshipStorage.create(id, friendId);
+            } else {
+                throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, friendId));
+            }
+        } else {
+            throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
+        }
+    }
+
+    public void removeFriend(Long id, Long friendId) {
+        Optional<User> user = userStorage.getById(id);
+        if (user.isPresent()) {
+            Optional<User> friend = userStorage.getById(friendId);
+            if (friend.isPresent()) {
+                friendshipStorage.remove(id, friendId);
+            } else {
+                throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, friendId));
+            }
+        } else {
+            throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
+        }
+    }
+
+    public List<User> findCommonFriends(Long id, Long otherId) {
+        Optional<User> user = userStorage.getById(id);
+        if (user.isPresent()) {
+            Optional<User> otherUser = userStorage.getById(otherId);
+            if (otherUser.isPresent()) {
+                return userStorage.findCommonFriends(id, otherId);
+            } else {
+                throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, otherId));
+            }
+        } else {
+            throw new NotFoundException(String.format(NOT_FOUND_MESSAGE, id));
+        }
+    }
+
+    private void validate(User user) throws DuplicatedDataException {
+        List<User> users = userStorage.getAll();
+
+        if (users.stream()
+                .anyMatch(u -> u.getEmail().equals(user.getEmail()) && !Objects.equals(u.getId(), user.getId()))) {
+            log.error("Email {} уже используется", user.getEmail());
+            throw new DuplicatedDataException("Этот email уже используется");
+        }
+
+        if (users.stream()
+                .anyMatch(u -> u.getLogin().equals(user.getLogin()) && !Objects.equals(u.getId(), user.getId()))) {
+            log.error("Логин {} уже используется", user.getLogin());
+            throw new DuplicatedDataException("Этот логин уже используется");
+        }
+
+        if (user.getLogin().contains(" ")) {
+            log.error("Логин {} уже содержит пробелы", user.getLogin());
+            throw new ValidationException("login", "Логин не может содержать пробелы");
+        }
     }
 }
